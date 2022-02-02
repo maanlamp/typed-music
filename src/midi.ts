@@ -1,10 +1,4 @@
 import { useEffect, useState } from "react";
-import {
-	constants,
-	Note,
-	noteFromFrequency,
-	noteToString
-} from "./note";
 
 class AudioError extends Error {
 	readonly name = "AudioError";
@@ -16,43 +10,22 @@ const midiMessageTypes = {
 } as const;
 
 export type MidiNote = Readonly<{
-	note: Note;
+	note: number;
 	velocity: number;
 }>;
 
-export const midiNoteToFequency = (note: number) =>
-	constants.A_4_FREQ * Math.pow(2, (note - 69) / 12);
+export const midiNoteToFrequency = ({
+	note
+}: MidiNote) => 2 ** ((note - 69) / 12) * 440;
 
 type UseMidiParams = Readonly<{
-	playNote: (
-		note: Note,
-		velocity: number
-	) => Promise<() => void>;
+	play: (note: MidiNote) => any;
+	stop: (note: number) => any;
 }>;
 
-const notes: Record<string, Promise<() => void>> = {};
-
-const useMidi = ({ playNote }: UseMidiParams) => {
+const useMidi = ({ play, stop }: UseMidiParams) => {
 	const [midi, setMidi] =
 		useState<WebMidi.MIDIAccess>();
-
-	const play = ({ note, velocity }: MidiNote) =>
-		(notes[noteToString(note)] = playNote(
-			note,
-			velocity
-		));
-
-	const stop = (note: Note) => {
-		const key = noteToString(note);
-		if (!notes[key])
-			throw new AudioError(
-				`Cannot stop a note that is not playing (${key}).`
-			);
-		notes[noteToString(note)].then(stop => {
-			stop();
-			delete notes[noteToString(note)];
-		});
-	};
 
 	const handleMessage = (
 		event: WebMidi.MIDIMessageEvent
@@ -62,14 +35,13 @@ const useMidi = ({ playNote }: UseMidiParams) => {
 				(event.data[0] &
 					0xf0) as keyof typeof midiMessageTypes
 			];
-		const note = noteFromFrequency(
-			midiNoteToFequency(event.data[1])
-		);
+		const note = event.data[1];
+		const velocity = event.data[2];
 		switch (type) {
 			case "noteOn":
 				return play({
 					note,
-					velocity: event.data[2]
+					velocity
 				});
 			case "noteOff":
 				return stop(note);

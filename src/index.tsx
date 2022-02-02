@@ -1,21 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import useAudio from "./audio";
 import "./index.css";
 import useMidi from "./midi";
 
 const App = () => {
-	// TODO: expose only play and stop from useAudio
-	// which are now implemented as state in this component
-	const { play, oscillators } = useAudio();
-
-	const inputs = useMidi({
-		playNote: play
-	});
+	const [maxVolume, setMaxVolume] = useState(1);
+	const { play, stop } = useAudio();
+	const inputs = useMidi({ play, stop });
 
 	return (
 		<main>
 			<div>
+				<input
+					defaultValue={100}
+					type="range"
+					onChange={({ target: { value } }) => {
+						setMaxVolume(parseInt(value) / 100);
+					}}
+				/>
 				{inputs?.length
 					? inputs.map(input => (
 							<div key={input.id}>
@@ -26,11 +29,6 @@ const App = () => {
 							</div>
 					  ))
 					: "No MIDI inputs detected."}
-			</div>
-			<div style={{ color: "red" }}>
-				{Object.keys(oscillators.current).map(note => (
-					<p key={note}>{note}</p>
-				))}
 			</div>
 		</main>
 	);
