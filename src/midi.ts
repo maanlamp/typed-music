@@ -26,6 +26,9 @@ type UseMidiParams = Readonly<{
 const useMidi = ({ play, stop }: UseMidiParams) => {
 	const [midi, setMidi] =
 		useState<WebMidi.MIDIAccess>();
+	const [inputs, setInputs] = useState<
+		WebMidi.MIDIInput[]
+	>([]);
 
 	const handleMessage = (
 		event: WebMidi.MIDIMessageEvent
@@ -48,9 +51,27 @@ const useMidi = ({ play, stop }: UseMidiParams) => {
 		}
 	};
 
+	const handleStateChange = (
+		event: WebMidi.MIDIConnectionEvent
+	) => {
+		setInputs(
+			Array.from(
+				(
+					event.target as WebMidi.MIDIAccess
+				).inputs.values()
+			)
+		);
+	};
+
 	useEffect(() => {
 		navigator.requestMIDIAccess().then(midi => {
 			setMidi(midi);
+
+			midi.addEventListener(
+				"statechange",
+				handleStateChange
+			);
+
 			midi.inputs.forEach(input => {
 				input.addEventListener(
 					"midimessage",
@@ -60,16 +81,21 @@ const useMidi = ({ play, stop }: UseMidiParams) => {
 		});
 
 		return () => {
-			midi?.inputs.forEach(input => {
+			inputs.forEach(input => {
 				input.removeEventListener(
 					"midimessage",
 					handleMessage as any
 				);
 			});
+
+			midi?.removeEventListener(
+				"statechange",
+				handleStateChange as any
+			);
 		};
 	}, []);
 
-	return midi?.inputs && [...midi.inputs.values()];
+	return inputs;
 };
 
 export default useMidi;

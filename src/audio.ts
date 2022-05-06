@@ -1,30 +1,42 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { MidiNote, midiNoteToFrequency } from "./midi";
-import { merge, omit } from "./state";
+import { merge, omit, useRefState } from "./state";
 
 type AudioNode = Readonly<{
 	oscillator: OscillatorNode;
 	gain: GainNode;
 }>;
 
-// TODO: Find out how to do this wihtout mutation in React
-let nodes: Record<number, AudioNode> = {};
-const setNodes = (
-	action:
-		| typeof nodes
-		| ((old: typeof nodes) => typeof nodes)
-) => {
-	nodes =
-		typeof action === "function"
-			? action(nodes)
-			: action;
-};
+const MINIMUM_FALLOFF_MS = 10;
 
-const useAudio = () => {
+type UseAudioParams = Readonly<{
+	gain?: number;
+}>;
+
+const useAudio = (props?: UseAudioParams) => {
 	const context = useMemo(
 		() => new AudioContext(),
 		[]
 	);
+
+	const [nodes, setNodes] = useRefState<
+		Record<number, AudioNode>
+	>({});
+
+	useEffect(() => {
+		if (props?.gain === undefined) return;
+		Object.values(nodes()).forEach(node => {
+			if (props.gain === 0) {
+				node.gain.gain.value = 0;
+			} else {
+				node.gain.gain.exponentialRampToValueAtTime(
+					props.gain!,
+					context.currentTime +
+						MINIMUM_FALLOFF_MS / 1000
+				);
+			}
+		});
+	}, [props?.gain]);
 
 	const play = (note: MidiNote) => {
 		const frequency = midiNoteToFrequency(note);
@@ -35,15 +47,16 @@ const useAudio = () => {
 			setNodes(omit(note.note));
 		};
 
-		// TODO: Find out how to get a value from the props
-		// that will actually update :(
-		const volume = (note.velocity / 127) * 0.2;
+		const volume = Math.min(
+			note.velocity / 127,
+			props?.gain ?? 1
+		);
 
 		const gain = context.createGain();
 		gain.gain.value = 0;
 		gain.gain.exponentialRampToValueAtTime(
 			volume,
-			context.currentTime + 0.03
+			context.currentTime + MINIMUM_FALLOFF_MS / 1000
 		);
 
 		oscillator.connect(gain);
@@ -58,21 +71,18 @@ const useAudio = () => {
 	};
 
 	const stop = (note: number) => {
-		nodes[note]?.gain.gain
-			.cancelScheduledValues(context.currentTime)
+		nodes()
+			[note].gain.gain.cancelScheduledValues(
+				context.currentTime
+			)
 			.setTargetAtTime(0, context.currentTime, 0.1)
 			.exponentialRampToValueAtTime(
 				0.0001,
-				context.currentTime + 0.03
+				context.currentTime + MINIMUM_FALLOFF_MS / 1000
 			);
 		setTimeout(() => {
-			// TODO: Somehow, very rarely oscillators can't be
-			// stopped because they're already gone...
-			// That sounds impossible since calling stop will
-			// trigger oscillator.onended which will only at
-			// that moment delete the oscillator.
-			nodes[note].oscillator.stop();
-		}, 30);
+			nodes()[note].oscillator.stop();
+		}, MINIMUM_FALLOFF_MS);
 	};
 
 	return { play, stop };

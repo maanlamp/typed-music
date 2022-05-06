@@ -1,3 +1,5 @@
+import { useRef } from "react";
+
 export const concat =
 	<T>(item: T) =>
 	(items: T[]) =>
@@ -9,13 +11,25 @@ export const without =
 		items.filter(x => x !== item);
 
 export const merge =
-	<T>(update: Partial<T>) =>
+	<T extends object>(update: Partial<T>) =>
 	(source: T) => ({ ...source, ...update });
 
 export const omit =
-	<T>(key: keyof T) =>
+	<T extends object>(key: keyof T) =>
 	(target: T) => {
-		const clone = { ...target };
-		delete clone[key];
-		return clone;
+		const { [key]: _, ...rest } = target;
+		return rest;
 	};
+
+export const useRefState = <T>(defaultValue: T) => {
+	const value = useRef(defaultValue);
+
+	const set = (update: T | ((value: T) => T)) => {
+		value.current =
+			typeof update === "function"
+				? (update as Function)(value.current)
+				: update;
+	};
+
+	return [() => value.current, set] as const;
+};
