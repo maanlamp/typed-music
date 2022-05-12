@@ -11,8 +11,17 @@ export const without =
 		items.filter(x => x !== item);
 
 export const merge =
-	<T extends object>(update: Partial<T>) =>
-	(source: T) => ({ ...source, ...update });
+	<T extends object>(
+		update:
+			| Partial<T>
+			| ((update: Partial<T>) => Partial<T>)
+	) =>
+	(source: T) => ({
+		...source,
+		...(typeof update === "function"
+			? update(source)
+			: update)
+	});
 
 export const omit =
 	<T extends object>(key: keyof T) =>

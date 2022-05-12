@@ -1,16 +1,26 @@
-import { useEffect, useMemo } from "react";
-import { MidiNote, midiNoteToFrequency } from "./midi";
-import { merge, omit, useRefState } from "./state";
+import { MidiNote, midiNoteToFrequency } from "midi";
+import { useEffect, useMemo, useRef } from "react";
+import { merge, omit, useRefState } from "state";
 
 type AudioNode = Readonly<{
 	oscillator: OscillatorNode;
 	gain: GainNode;
+	reverb?: ConvolverNode;
 }>;
 
-const MINIMUM_FALLOFF_MS = 10;
+// TODO: Reverb? https://developer.mozilla.org/en-US/docs/Web/API/ConvolverNode
+// TODO: attack decay sustain release (ADSR envelope)
+
+export type Synthesiser = Readonly<{
+	type: OscillatorType;
+	detune?: number | ((note: MidiNote) => number);
+	gain?: number | ((note: MidiNote) => number);
+}>[];
+
+const MINIMUM_MS_TO_AVOID_CLIPPING = 30;
 
 type UseAudioParams = Readonly<{
-	gain?: number;
+	volume?: number;
 }>;
 
 const useAudio = (props?: UseAudioParams) => {
@@ -19,73 +29,93 @@ const useAudio = (props?: UseAudioParams) => {
 		[]
 	);
 
-	const [nodes, setNodes] = useRefState<
-		Record<number, AudioNode>
-	>({});
+	const gain = useRef(
+		(() => {
+			const gain = context.createGain();
+			gain.gain.value = props?.volume ?? 0;
+			gain.connect(context.destination);
+			return gain;
+		})()
+	);
 
 	useEffect(() => {
-		if (props?.gain === undefined) return;
-		Object.values(nodes()).forEach(node => {
-			if (props.gain === 0) {
-				node.gain.gain.value = 0;
-			} else {
-				node.gain.gain.exponentialRampToValueAtTime(
-					props.gain!,
-					context.currentTime +
-						MINIMUM_FALLOFF_MS / 1000
-				);
-			}
-		});
-	}, [props?.gain]);
+		gain.current.gain.value = props?.volume ?? 0;
+	}, [props?.volume]);
 
-	const play = (note: MidiNote) => {
-		const frequency = midiNoteToFrequency(note);
-		const oscillator = context.createOscillator();
-		oscillator.type = "triangle";
-		oscillator.frequency.value = frequency;
-		oscillator.onended = () => {
-			setNodes(omit(note.note));
-		};
+	const [nodes, setNodes] = useRefState<
+		Record<number, AudioNode[]>
+	>({});
 
-		const volume = Math.min(
-			note.velocity / 127,
-			props?.gain ?? 1
-		);
+	const play = ({
+		note,
+		synth
+	}: {
+		note: MidiNote;
+		synth: Synthesiser;
+	}) => {
+		for (const synthNode of synth) {
+			const oscillator = context.createOscillator();
+			oscillator.type = synthNode.type;
 
-		const gain = context.createGain();
-		gain.gain.value = 0;
-		gain.gain.exponentialRampToValueAtTime(
-			volume,
-			context.currentTime + MINIMUM_FALLOFF_MS / 1000
-		);
+			const frequency = midiNoteToFrequency(note);
+			oscillator.frequency.value = frequency;
 
-		oscillator.connect(gain);
-		gain.connect(context.destination);
-		oscillator.start();
+			const detune =
+				typeof synthNode.detune === "function"
+					? synthNode.detune(note)
+					: synthNode.detune ?? 0;
+			oscillator.detune.value = detune;
 
-		setNodes(
-			merge({
-				[note.note]: { oscillator, gain }
-			})
-		);
+			const _gain =
+				typeof synthNode.gain === "function"
+					? synthNode.gain(note)
+					: synthNode.gain ?? 1;
+			const volume = (note.velocity / 127) * _gain;
+
+			const gainNode = context.createGain();
+			gainNode.gain.value = 0;
+			gainNode.gain.exponentialRampToValueAtTime(
+				volume,
+				context.currentTime
+			);
+
+			oscillator.connect(gainNode);
+			gainNode.connect(gain.current);
+			oscillator.start();
+
+			setNodes(
+				merge({
+					[note.note]: (
+						nodes()[note.note] ?? []
+					).concat({
+						oscillator,
+						gain: gainNode
+					})
+				})
+			);
+		}
 	};
 
 	const stop = (note: number) => {
-		nodes()
-			[note].gain.gain.cancelScheduledValues(
-				context.currentTime
-			)
-			.setTargetAtTime(0, context.currentTime, 0.1)
-			.exponentialRampToValueAtTime(
-				0.0001,
-				context.currentTime + MINIMUM_FALLOFF_MS / 1000
-			);
+		nodes()[note]?.forEach(node => {
+			node.gain.gain
+				.cancelScheduledValues(context.currentTime)
+				.setTargetAtTime(0, context.currentTime, 0.1)
+				.exponentialRampToValueAtTime(
+					0.0001,
+					context.currentTime +
+						MINIMUM_MS_TO_AVOID_CLIPPING / 1000
+				);
+		});
 		setTimeout(() => {
-			nodes()[note].oscillator.stop();
-		}, MINIMUM_FALLOFF_MS);
+			nodes()[note]?.forEach(node => {
+				node.oscillator.stop();
+			});
+			setNodes(omit(note));
+		}, MINIMUM_MS_TO_AVOID_CLIPPING);
 	};
 
-	return { play, stop };
+	return { play, stop, gain };
 };
 
 export default useAudio;

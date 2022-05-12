@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
 
-class AudioError extends Error {
-	readonly name = "AudioError";
-}
-
 const midiMessageTypes = {
 	128: "noteOff",
 	144: "noteOn"

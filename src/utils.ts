@@ -8,3 +8,12 @@ export const apply = <
 >(
 	f: T
 ) => f();
+
+export const range = (n: number) =>
+	Array.from(Array(n).keys());
+
+export const random = (max: number) =>
+	Math.round(Math.random() * max);
+
+export const choose = <T>(items: T[]) =>
+	items[random(items.length - 1)];
