@@ -1,7 +1,7 @@
 import Note from "components/note";
-import { PX_PER_MILLISECOND } from "index";
 import { darken, withOpacity } from "lib/color";
 import { MidiNoteWithDuration } from "lib/midi";
+import usePlayback from "lib/playback";
 import { classes, styleVars } from "lib/utils";
 import { useState } from "react";
 import "./recording.css";
@@ -15,18 +15,24 @@ export type Recording = Readonly<{
 type RecordingProps = Readonly<{
 	recording: Recording;
 	color: string;
+	units: ReturnType<typeof usePlayback>["units"];
+	playback: (recording: Recording) => void;
 }>;
 
 const Recording = ({
 	recording,
-	color
+	color,
+	units,
+	playback
 }: RecordingProps) => {
 	const background = withOpacity(color, 0.75);
 	const border = darken(color, 0.05);
 	const duration = recording.end - recording.start;
-	const width = `${duration * PX_PER_MILLISECOND}px`;
+	const width = `${
+		duration * units.pixelsPerMillisecond
+	}px`;
 	const left = `${
-		recording.start * PX_PER_MILLISECOND
+		recording.start * units.pixelsPerMillisecond
 	}px`;
 
 	const [selected, setSelected] = useState(false);
@@ -38,7 +44,10 @@ const Recording = ({
 
 	return (
 		<div
-			onClick={toggleSelected}
+			onClick={() => {
+				toggleSelected();
+				playback(recording);
+			}}
 			className={classes([
 				"recording",
 				selected && "selected"
@@ -50,7 +59,12 @@ const Recording = ({
 				background
 			})}>
 			{recording.notes.map((note, i) => (
-				<Note key={i} note={note} color={color} />
+				<Note
+					key={i}
+					note={note}
+					color={color}
+					units={units}
+				/>
 			))}
 		</div>
 	);

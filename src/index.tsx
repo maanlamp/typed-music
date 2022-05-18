@@ -1,12 +1,12 @@
-import { Recording } from "components/recording";
 import Track, {
 	type Track as TrackType
 } from "components/track";
 import "index.css";
 import useAudio, { Synthesiser } from "lib/audio";
 import useMidi from "lib/midi";
-import { random, range } from "lib/utils";
-import React, { useEffect, useState } from "react";
+import usePlayback from "lib/playback";
+import { range } from "lib/utils";
+import React, { useState } from "react";
 import ReactDOM from "react-dom";
 
 enum Interval {
@@ -16,20 +16,33 @@ enum Interval {
 	Octave = 1200
 }
 
-const pipes = 32;
-const falloff = 0.4;
-const bassToTrebleRatio = 28 / pipes;
-const organ: Synthesiser = range(pipes).map(i => ({
-	type: "sine",
-	detune:
-		(i - Math.floor(pipes * bassToTrebleRatio)) *
-		Interval.Octave,
-	gain:
-		i <= Math.floor(pipes * bassToTrebleRatio)
-			? 1
-			: (1 - falloff) **
-			  (i - Math.floor(pipes * bassToTrebleRatio))
-}));
+const organ: Synthesiser = [
+	{
+		type: "sine",
+		detune: Interval.Octave * -1,
+		gain: 1
+	},
+	{
+		type: "sine",
+		detune: 0,
+		gain: 1
+	},
+	{
+		type: "sine",
+		detune: Interval.Octave,
+		gain: 0.5
+	},
+	{
+		type: "sine",
+		detune: Interval.Octave * 2,
+		gain: 0.25
+	},
+	{
+		type: "sine",
+		detune: Interval.Octave * 3,
+		gain: 0.125
+	}
+];
 
 const colors = [
 	"#53E46E",
@@ -41,81 +54,33 @@ const colors = [
 
 // TODO: Visualise current input with https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
 
-export const BARS_IN_SIGNATURE = 4;
-export const BEATS_PER_MINUTE = 100;
-export const BEATS_PER_SECOND = BEATS_PER_MINUTE / 60;
-export const BEATS_PER_MILLISECOND =
-	BEATS_PER_SECOND / 1000;
-export const PX_PER_BEAT = 32;
-export const PX_PER_BAR =
-	PX_PER_BEAT * BARS_IN_SIGNATURE;
-export const PX_PER_SECOND =
-	PX_PER_BEAT * BEATS_PER_SECOND;
-export const PX_PER_MILLISECOND =
-	PX_PER_BEAT * BEATS_PER_MILLISECOND;
-export const MS_PER_BEAT = 1000 / BEATS_PER_SECOND;
-export const MS_PER_BAR =
-	MS_PER_BEAT * BARS_IN_SIGNATURE;
-
 const App = () => {
 	const [volume, setVolume] = useState(0.05);
-	const { play, stop, gain } = useAudio({ volume });
+	const audio = useAudio({ volume });
+	const { play, stop, gain } = audio;
 	const inputs = useMidi({
 		play: note => play({ note, synth: organ }),
 		stop
 	});
-	const [tracks, setTracks] = useState<TrackType[]>();
-
-	useEffect(() => {
-		const _tracks: TrackType[] = [
-			[
-				{
-					start: 0,
-					end: MS_PER_BAR,
-					notes: range(4).map(i => ({
-						note: 50 + i * 10,
-						velocity: 127,
-						time: i * MS_PER_BEAT,
-						duration: MS_PER_BEAT
-					}))
-				}
-			]
-		];
-		let i = colors.length - 1;
-		while (i-- > 0) {
-			const track: TrackType = [];
-			_tracks.push(track);
-			const max = 1 + random(4);
-			let j = 0;
-			while (j < max) {
-				const prevRecording = track[j - 1] as
-					| Recording
-					| undefined;
-				const duration =
-					(1 + random(10)) * MS_PER_BEAT;
-				const start = prevRecording
-					? prevRecording.end
-					: 0;
-				const end =
-					(prevRecording?.end ?? 0) + duration;
-				track.push({
-					start,
-					end,
-					notes: range(10).map(() => ({
-						note: 69 + random(12) - random(24),
-						velocity: 127,
-						time:
-							Math.abs(
-								random(duration / MS_PER_BEAT) - 1
-							) * MS_PER_BEAT,
-						duration: MS_PER_BEAT
-					}))
-				});
-				j += 1;
+	const { playback, units } = usePlayback({
+		bpm: 100,
+		signature: [4, 4],
+		audio
+	});
+	const [tracks, setTracks] = useState<TrackType[]>([
+		[
+			{
+				start: 0,
+				end: units.millisecondsPerBar,
+				notes: range(4).map(i => ({
+					note: 50 + i * 2,
+					velocity: 127,
+					time: i * units.millisecondsPerBeat,
+					duration: units.millisecondsPerBeat
+				}))
 			}
-		}
-		setTracks(_tracks);
-	}, []);
+		]
+	]);
 
 	return (
 		<main>
@@ -146,8 +111,12 @@ const App = () => {
 					<Track
 						key={i}
 						track={track}
+						units={units}
 						color={
 							colors[i % colors.length] || colors[0]
+						}
+						playback={recording =>
+							playback(recording, organ)
 						}
 					/>
 				))}
