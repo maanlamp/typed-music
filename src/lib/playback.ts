@@ -38,13 +38,12 @@ const usePlayback = ({
 	) => {
 		for (const note of recording.notes) {
 			setTimeout(() => {
-				console.log("play", note, synth);
 				audio.play({ note, synth });
 				setTimeout(() => {
-					console.log("stop", note);
 					audio.stop(note.note);
-				}, note.duration);
-			}, note.time);
+					// TODO: DEBUG: shouldn't use timeouts to play audio
+				}, note.duration - 50);
+			}, note.time + 50);
 		}
 	};
 

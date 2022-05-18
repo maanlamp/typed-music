@@ -5,7 +5,6 @@ import "index.css";
 import useAudio, { Synthesiser } from "lib/audio";
 import useMidi from "lib/midi";
 import usePlayback from "lib/playback";
-import { range } from "lib/utils";
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 
@@ -72,12 +71,50 @@ const App = () => {
 			{
 				start: 0,
 				end: units.millisecondsPerBar,
-				notes: range(4).map(i => ({
-					note: 50 + i * 2,
-					velocity: 127,
-					time: i * units.millisecondsPerBeat,
-					duration: units.millisecondsPerBeat
-				}))
+				notes: [
+					{
+						note: 69,
+						velocity: 127,
+						time: (0 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69 - 5,
+						velocity: 127,
+						time: (2 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 4
+					},
+					{
+						note: 69 - 5,
+						velocity: 127,
+						time: (3 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 4
+					},
+					{
+						note: 69 - 3,
+						velocity: 127,
+						time: (4 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69 - 5,
+						velocity: 127,
+						time: (6 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69 - 1,
+						velocity: 127,
+						time: (10 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69,
+						velocity: 127,
+						time: (12 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat
+					}
+				]
 			}
 		]
 	]);
