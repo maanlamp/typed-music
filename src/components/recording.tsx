@@ -1,4 +1,5 @@
 import Note from "components/note";
+import { PX_PER_MILLISECOND } from "index";
 import { darken, withOpacity } from "lib/color";
 import { MidiNoteWithDuration } from "lib/midi";
 import { classes, styleVars } from "lib/utils";
@@ -22,6 +23,11 @@ const Recording = ({
 }: RecordingProps) => {
 	const background = withOpacity(color, 0.75);
 	const border = darken(color, 0.05);
+	const duration = recording.end - recording.start;
+	const width = `${duration * PX_PER_MILLISECOND}px`;
+	const left = `${
+		recording.start * PX_PER_MILLISECOND
+	}px`;
 
 	const [selected, setSelected] = useState(false);
 
@@ -33,28 +39,18 @@ const Recording = ({
 	return (
 		<div
 			onClick={toggleSelected}
-			key={recording.start}
 			className={classes([
 				"recording",
 				selected && "selected"
 			])}
 			style={styleVars({
-				start: `${recording.start}px`,
-				end: `${recording.end}px`,
+				left,
+				width,
 				border,
 				background
 			})}>
-			{recording.notes.map(note => (
-				<Note
-					key={note.time}
-					note={note}
-					domain={Math.max(
-						...recording.notes.map(
-							note => note.time + note.duration
-						)
-					)}
-					color={color}
-				/>
+			{recording.notes.map((note, i) => (
+				<Note key={i} note={note} color={color} />
 			))}
 		</div>
 	);

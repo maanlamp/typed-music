@@ -6,8 +6,8 @@
 	background: repeating-linear-gradient(
 		90deg,
 		var(--grey),
-		var(--grey) 31px,
-		var(--darker-grey) 32px,
-		var(--grey) 32px
+		var(--grey) calc(var(--pixels-per-bar) - 1px),
+		var(--darker-grey) var(--pixels-per-bar),
+		var(--grey) var(--pixels-per-bar)
 	);
 }

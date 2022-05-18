@@ -1,6 +1,7 @@
 import Recording, {
 	type Recording as RecordingType
 } from "components/recording";
+import { PX_PER_BEAT } from "index";
 import { darken } from "lib/color";
 import { styleVars } from "lib/utils";
 import "./track.css";
@@ -22,7 +23,8 @@ const Track = ({ track, color }: TrackProps) => {
 			style={styleVars({
 				grey,
 				darkerGrey,
-				color
+				color,
+				pixelsPerBar: `${PX_PER_BEAT}px`
 			})}>
 			{track.map(recording => (
 				<Recording
