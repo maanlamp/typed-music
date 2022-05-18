@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/typed-music/static/css/main.97b67699.css",
+    "main.js": "/typed-music/static/js/main.9b1bc913.js",
+    "index.html": "/typed-music/index.html",
+    "main.97b67699.css.map": "/typed-music/static/css/main.97b67699.css.map",
+    "main.9b1bc913.js.map": "/typed-music/static/js/main.9b1bc913.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.97b67699.css",
+    "static/js/main.9b1bc913.js"
+  ]
+}
