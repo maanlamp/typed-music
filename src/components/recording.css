@@ -1,0 +1,48 @@
+.recording {
+	--shrink-amount-when-hovered: 4px;
+	--width: var(--end) - var(--start);
+	position: absolute;
+	height: 100%;
+	width: calc(var(--width));
+	left: var(--start);
+	border: 2px solid var(--border);
+	background: var(--background);
+	border-radius: 4px;
+	overflow: hidden;
+	transition: all 0.1s ease;
+}
+
+.recording:hover,
+.recording.selected {
+	width: calc(
+		var(--width) - var(--shrink-amount-when-hovered)
+	);
+	height: calc(
+		100% - var(--shrink-amount-when-hovered)
+	);
+	margin: calc(var(--shrink-amount-when-hovered) / 2);
+	cursor: pointer;
+	z-index: 1;
+}
+
+.recording.selected {
+	animation: wiggle 0.5s ease infinite;
+}
+
+@keyframes wiggle {
+	0% {
+		transform: rotate(-0.5deg);
+	}
+	25% {
+		transform: rotate(0.5deg);
+	}
+	50% {
+		transform: rotate(-0.5deg);
+	}
+	75% {
+		transform: rotate(0.5deg);
+	}
+	100% {
+		transform: rotate(-0.5deg);
+	}
+}

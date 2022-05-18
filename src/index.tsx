@@ -1,9 +1,13 @@
-import useAudio, { Synthesiser } from "audio";
+import { Recording } from "components/recording";
+import Track, {
+	type Track as TrackType
+} from "components/track";
 import "index.css";
-import useMidi from "midi";
-import React, { useState } from "react";
+import useAudio, { Synthesiser } from "lib/audio";
+import useMidi from "lib/midi";
+import { random, range } from "lib/utils";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { range } from "utils";
 
 enum Interval {
 	Cent = 1,
@@ -14,7 +18,7 @@ enum Interval {
 
 const pipes = 32;
 const falloff = 0.4;
-const bassToTrebleRatio = 1 / 8;
+const bassToTrebleRatio = 28 / pipes;
 const organ: Synthesiser = range(pipes).map(i => ({
 	type: "sine",
 	detune:
@@ -27,6 +31,14 @@ const organ: Synthesiser = range(pipes).map(i => ({
 			  (i - Math.floor(pipes * bassToTrebleRatio))
 }));
 
+const colors = [
+	"#53E46E",
+	"#EEE82C",
+	"#B4ADEA",
+	"#F476C2",
+	"#FF9447"
+];
+
 // TODO: Visualise current input with https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
 
 const App = () => {
@@ -36,6 +48,41 @@ const App = () => {
 		play: note => play({ note, synth: organ }),
 		stop
 	});
+	const [tracks, setTracks] = useState<TrackType[]>();
+
+	useEffect(() => {
+		const _tracks: TrackType[] = [];
+		let i = colors.length;
+		while (i-- > 0) {
+			const track: TrackType = [];
+			_tracks.push(track);
+			const max = 1 + random(4);
+			let j = 0;
+			while (j < max) {
+				const prevRecording = track[j - 1] as
+					| Recording
+					| undefined;
+				const duration = 100 + random(400);
+				const start = prevRecording
+					? prevRecording.end
+					: 0;
+				const end =
+					(prevRecording?.end ?? 0) + duration;
+				track.push({
+					start,
+					end,
+					notes: range(10).map(() => ({
+						note: random(127),
+						velocity: 127,
+						time: random(1000000),
+						duration: duration / 10
+					}))
+				});
+				j += 1;
+			}
+		}
+		setTracks(_tracks);
+	}, []);
 
 	return (
 		<main>
@@ -43,7 +90,7 @@ const App = () => {
 				<div>
 					<span>Gain</span>
 					<input
-						defaultValue={17.5}
+						defaultValue={volume * 100}
 						type="range"
 						onChange={({ target: { value } }) => {
 							gain.current.gain.value =
@@ -60,6 +107,17 @@ const App = () => {
 						<p>Manufacturer: {input.manufacturer}</p>
 					</div>
 				)) ?? "No MIDI inputs detected."}
+			</div>
+			<div>
+				{tracks?.map((track, i) => (
+					<Track
+						key={i}
+						track={track}
+						color={
+							colors[i % colors.length] || colors[0]
+						}
+					/>
+				))}
 			</div>
 		</main>
 	);

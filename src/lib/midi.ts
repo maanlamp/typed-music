@@ -8,7 +8,13 @@ const midiMessageTypes = {
 export type MidiNote = Readonly<{
 	note: number;
 	velocity: number;
+	time: number;
 }>;
+
+export type MidiNoteWithDuration = MidiNote &
+	Readonly<{
+		duration: number;
+	}>;
 
 export const midiNoteToFrequency = ({
 	note
@@ -40,7 +46,8 @@ const useMidi = ({ play, stop }: UseMidiParams) => {
 			case "noteOn":
 				return play({
 					note,
-					velocity
+					velocity,
+					time: performance.now()
 				});
 			case "noteOff":
 				return stop(note);

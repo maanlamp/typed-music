@@ -1,6 +1,9 @@
-import { MidiNote, midiNoteToFrequency } from "midi";
+import {
+	MidiNote,
+	midiNoteToFrequency
+} from "lib/midi";
+import { merge, omit, useRefState } from "lib/state";
 import { useEffect, useMemo, useRef } from "react";
-import { merge, omit, useRefState } from "state";
 
 type AudioNode = Readonly<{
 	oscillator: OscillatorNode;
