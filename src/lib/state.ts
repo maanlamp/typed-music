@@ -1,5 +1,3 @@
-import { useRef } from "react";
-
 export const isEmpty = (xs: any[]): xs is [] =>
 	xs.length === 0;
 
@@ -20,7 +18,7 @@ export const without =
 export const withoutIndex =
 	(index: number) =>
 	<T>(xs: T[] | undefined) => {
-		if (!xs) return xs;
+		if (!xs) return [];
 		const clone = xs.slice();
 		clone.splice(index, 1);
 		return clone;
@@ -45,16 +43,3 @@ export const omit =
 		const { [key]: _, ...rest } = target;
 		return rest;
 	};
-
-export const useRefState = <T>(defaultValue: T) => {
-	const value = useRef(defaultValue);
-
-	const set = (update: T | ((value: T) => T)) => {
-		value.current =
-			typeof update === "function"
-				? (update as Function)(value.current)
-				: update;
-	};
-
-	return [() => value.current, set] as const;
-};

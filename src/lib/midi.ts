@@ -11,6 +11,11 @@ export type MidiNote = Readonly<{
 	time: number;
 }>;
 
+export const isMidiNoteWithDuration = (
+	note: MidiNote | MidiNoteWithDuration
+): note is MidiNoteWithDuration =>
+	!!(note as MidiNoteWithDuration).duration;
+
 export type MidiNoteWithDuration = MidiNote &
 	Readonly<{
 		duration: number;

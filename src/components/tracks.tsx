@@ -20,7 +20,6 @@ const colors = [
 
 const Tracks = () => {
 	const [volume, setVolume] = useState(0.05);
-	const [tracks, setTracks] = useState<TrackType[]>();
 	const audio = useAudio({ volume });
 	const {
 		playback,
@@ -34,6 +33,58 @@ const Tracks = () => {
 		signature: [4, 4],
 		audio
 	});
+	const [tracks, setTracks] = useState<TrackType[]>([
+		[
+			{
+				start: 0,
+				end: units.millisecondsPerBar,
+				notes: [
+					{
+						note: 69,
+						velocity: 127,
+						time: (0 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69 - 5,
+						velocity: 127,
+						time: (2 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 4
+					},
+					{
+						note: 69 - 5,
+						velocity: 127,
+						time: (3 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 4
+					},
+					{
+						note: 69 - 3,
+						velocity: 127,
+						time: (4 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69 - 5,
+						velocity: 127,
+						time: (6 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69 - 1,
+						velocity: 127,
+						time: (10 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69,
+						velocity: 127,
+						time: (12 * units.millisecondsPerBeat) / 4,
+						duration: units.millisecondsPerBeat
+					}
+				]
+			}
+		]
+	]);
 	useMidi({
 		play: note => audio.play({ note, synth: organ }),
 		stop: audio.stop
@@ -153,58 +204,5 @@ const organ: Synthesiser = [
 		gain: 0.125
 	}
 ];
-
-// range(colors.length).map(() =>
-// 			range(1 + random(6)).map(i => ({
-// 				start: 0 + i * units.millisecondsPerBar,
-// 				end:
-// 					units.millisecondsPerBar +
-// 					i * units.millisecondsPerBar,
-// 				notes: [
-// 					{
-// 						note: 69,
-// 						velocity: 127,
-// 						time: (0 * units.millisecondsPerBeat) / 4,
-// 						duration: units.millisecondsPerBeat / 2
-// 					},
-// 					{
-// 						note: 69 - 5,
-// 						velocity: 127,
-// 						time: (2 * units.millisecondsPerBeat) / 4,
-// 						duration: units.millisecondsPerBeat / 4
-// 					},
-// 					{
-// 						note: 69 - 5,
-// 						velocity: 127,
-// 						time: (3 * units.millisecondsPerBeat) / 4,
-// 						duration: units.millisecondsPerBeat / 4
-// 					},
-// 					{
-// 						note: 69 - 3,
-// 						velocity: 127,
-// 						time: (4 * units.millisecondsPerBeat) / 4,
-// 						duration: units.millisecondsPerBeat / 2
-// 					},
-// 					{
-// 						note: 69 - 5,
-// 						velocity: 127,
-// 						time: (6 * units.millisecondsPerBeat) / 4,
-// 						duration: units.millisecondsPerBeat / 2
-// 					},
-// 					{
-// 						note: 69 - 1,
-// 						velocity: 127,
-// 						time: (10 * units.millisecondsPerBeat) / 4,
-// 						duration: units.millisecondsPerBeat / 2
-// 					},
-// 					{
-// 						note: 69,
-// 						velocity: 127,
-// 						time: (12 * units.millisecondsPerBeat) / 4,
-// 						duration: units.millisecondsPerBeat
-// 					}
-// 				]
-// 			}))
-// 		)
 
 export default Tracks;
