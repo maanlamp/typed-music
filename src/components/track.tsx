@@ -1,9 +1,9 @@
 import Recording, {
 	type Recording as RecordingType
 } from "components/recording";
-import { darken } from "lib/color";
 import usePlayback from "lib/playback";
-import { styleVars } from "lib/utils";
+import { classes, styleVars } from "lib/utils";
+import { useState } from "react";
 import "./track.css";
 
 export type Track = RecordingType[];
@@ -13,35 +13,51 @@ type TrackProps = Readonly<{
 	color: string;
 	units: ReturnType<typeof usePlayback>["units"];
 	playback: (recording: RecordingType) => void;
+	remove: () => void;
 }>;
 
 const Track = ({
 	track,
 	color,
 	units,
-	playback
+	playback,
+	remove
 }: TrackProps) => {
-	const grey = `#F9F9F9`;
-	const darkerGrey = darken(grey, 0.2);
+	const [open, setOpen] = useState(false);
+
+	const toggleOpen = () => setOpen(!open);
 
 	return (
 		<div
-			className="track"
+			className="track-container"
 			style={styleVars({
-				grey,
-				darkerGrey,
-				color,
-				pixelsPerBar: `${units.pixelsPerBeat}px`
+				color
 			})}>
-			{track.map(recording => (
-				<Recording
-					key={recording.start}
-					recording={recording}
-					color={color}
-					units={units}
-					playback={playback}
-				/>
-			))}
+			<div
+				className={classes([
+					"track-thumb",
+					open && "open"
+				])}
+				onClick={toggleOpen}>
+				{open && (
+					<>
+						<button onClick={remove}>
+							Delete track
+						</button>
+					</>
+				)}
+			</div>
+			<div className="track">
+				{track.map(recording => (
+					<Recording
+						key={recording.start}
+						recording={recording}
+						color={color}
+						units={units}
+						playback={playback}
+					/>
+				))}
+			</div>
 		</div>
 	);
 };

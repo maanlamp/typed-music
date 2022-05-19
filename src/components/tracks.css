@@ -1,0 +1,35 @@
+.tracks {
+	position: relative;
+}
+
+.timeline {
+	height: 16px;
+	background: var(--darker-grey);
+	position: relative;
+}
+
+.timeline .timeline-thumb {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: black;
+	position: absolute;
+	transform: translateX(calc(31px - 50%));
+	cursor: pointer;
+	transition: transform 0.1s ease;
+	z-index: 2;
+}
+
+.timeline .timeline-thumb:hover {
+	transform: translateX(calc(31px - 50%)) scale(1.5);
+}
+
+.timeline-cursor {
+	position: absolute;
+	width: 1px;
+	background: red;
+	top: 0;
+	bottom: 0;
+	z-index: 1;
+	transform: translateX(31px);
+}
