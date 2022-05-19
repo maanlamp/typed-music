@@ -16,14 +16,12 @@ type RecordingProps = Readonly<{
 	recording: Recording;
 	color: string;
 	units: ReturnType<typeof usePlayback>["units"];
-	playback: (recording: Recording) => void;
 }>;
 
 const Recording = ({
 	recording,
 	color,
-	units,
-	playback
+	units
 }: RecordingProps) => {
 	const background = withOpacity(color, 0.75);
 	const border = darken(color, 0.05);
@@ -38,16 +36,12 @@ const Recording = ({
 	const [selected, setSelected] = useState(false);
 
 	const toggleSelected = () => {
-		console.log(recording);
 		setSelected(!selected);
 	};
 
 	return (
 		<div
-			onClick={() => {
-				toggleSelected();
-				playback(recording);
-			}}
+			onClick={toggleSelected}
 			className={classes([
 				"recording",
 				selected && "selected"

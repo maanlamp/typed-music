@@ -117,7 +117,16 @@ const Tracks = () => {
 				<button onClick={() => setTime(0)}>
 					&nbsp; |&lt; &nbsp;
 				</button>
-				<button onClick={() => setPlaying(!playing)}>
+				<button
+					onClick={() => {
+						setPlaying(!playing);
+						// TODO: Actually properly time notes when (un)pausing
+						tracks.forEach(track =>
+							track.forEach(recording =>
+								playback(recording, organ)
+							)
+						);
+					}}>
 					&nbsp;
 					{playing ? "||" : ">"}
 					&nbsp;
@@ -150,10 +159,7 @@ const Tracks = () => {
 							track={track}
 							units={units}
 							color={
-								colors[i % colors.length] || colors[0]
-							}
-							playback={recording =>
-								playback(recording, organ)
+								colors[i % colors.length] ?? colors[0]
 							}
 							remove={() => setTracks(withoutIndex(i))}
 						/>

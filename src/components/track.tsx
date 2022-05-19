@@ -12,7 +12,6 @@ type TrackProps = Readonly<{
 	track: Track;
 	color: string;
 	units: ReturnType<typeof usePlayback>["units"];
-	playback: (recording: RecordingType) => void;
 	remove: () => void;
 }>;
 
@@ -20,7 +19,6 @@ const Track = ({
 	track,
 	color,
 	units,
-	playback,
 	remove
 }: TrackProps) => {
 	const [open, setOpen] = useState(false);
@@ -54,7 +52,6 @@ const Track = ({
 						recording={recording}
 						color={color}
 						units={units}
-						playback={playback}
 					/>
 				))}
 			</div>

@@ -44,7 +44,7 @@ const usePlayback = ({
 			audio.play({
 				note,
 				synth,
-				afterMs: note.time
+				afterMs: recording.start + note.time
 			});
 		}
 	};
