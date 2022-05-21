@@ -10,15 +10,6 @@ const App = () => {
 
 	return (
 		<main>
-			{/* <div>
-				<br />
-				{inputs?.map(input => (
-					<div key={input.id}>
-						<p>Name: {input.name}</p>
-						<p>Manufacturer: {input.manufacturer}</p>
-					</div>
-				)) ?? "No MIDI inputs detected."}
-			</div> */}
 			<Tracks />
 		</main>
 	);

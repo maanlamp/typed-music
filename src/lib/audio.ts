@@ -109,59 +109,65 @@ const useAudio = (props?: UseAudioParams) => {
 		}
 	};
 
-	const stopNode = (
-		node: AudioNode,
-		note: MidiNote["note"],
-		afterSeconds: number = 0,
-		endSeconds: number = 0
-	) => {
-		node.gain.gain
-			.cancelScheduledValues(
-				AUDIO_CONTEXT.currentTime + afterSeconds
-			)
-			.setTargetAtTime(
-				0,
-				AUDIO_CONTEXT.currentTime + afterSeconds,
-				0.1
-			)
-			.exponentialRampToValueAtTime(
-				0.0000001,
-				endSeconds
-			);
-		node.oscillator.stop(endSeconds);
-
-		setTimeout(() => {
-			const index = nodes.current[note]?.findIndex(
-				x => x === node
-			);
-			if (index >= 0)
-				nodes.current[note]?.splice(index, 1);
-			if (!nodes.current[note]?.length)
-				delete nodes.current[note];
-		}, afterSeconds * 1000);
-	};
-
 	const stop = (note?: number, afterMs?: number) => {
 		if (!note) {
 			return Object.entries(nodes.current).forEach(
-				([note, nodes]) =>
-					nodes.forEach(node =>
-						stopNode(node, parseInt(note))
+				([note, all]) =>
+					all.forEach(node =>
+						destroy(node, nodes, parseInt(note))
 					)
 			);
 		}
 
-		const afterSeconds = (afterMs ?? 0) / 1000;
-		const endSeconds =
-			AUDIO_CONTEXT.currentTime +
-			afterSeconds +
-			MINIMUM_S_TO_AVOID_CLIPPING;
 		nodes.current[note]?.forEach(node =>
-			stopNode(node, note, afterSeconds, endSeconds)
+			destroy(node, nodes, note, afterMs)
 		);
 	};
 
 	return { play, stop, gain };
+};
+
+const destroy = (
+	node: AudioNode,
+	nodes: React.MutableRefObject<
+		Record<number, AudioNode[]>
+	>,
+	note: MidiNote["note"],
+	afterMs: number = 0
+) => {
+	const afterSeconds = afterMs / 1000;
+	const endSeconds =
+		AUDIO_CONTEXT.currentTime +
+		afterSeconds +
+		MINIMUM_S_TO_AVOID_CLIPPING;
+
+	node.gain.gain
+		.cancelScheduledValues(
+			AUDIO_CONTEXT.currentTime + afterSeconds
+		)
+		.setTargetAtTime(
+			0,
+			AUDIO_CONTEXT.currentTime + afterSeconds,
+			0.1
+		)
+		.exponentialRampToValueAtTime(
+			0.0000001,
+			endSeconds
+		);
+
+	node.oscillator.stop(endSeconds);
+
+	setTimeout(() => {
+		const index = nodes.current[note]?.findIndex(
+			x => x === node
+		);
+
+		if (index >= 0)
+			nodes.current[note]?.splice(index, 1);
+
+		if (!nodes.current[note]?.length)
+			delete nodes.current[note];
+	}, afterSeconds * 1000);
 };
 
 export default useAudio;

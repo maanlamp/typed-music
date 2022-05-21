@@ -1,3 +1,5 @@
+import { ReactComponent as TrashIcon } from "assets/icons/trash.svg";
+import Icon from "components/icon";
 import Recording, {
 	type Recording as RecordingType
 } from "components/recording";
@@ -40,7 +42,7 @@ const Track = ({
 				{open && (
 					<>
 						<button onClick={remove}>
-							Delete track
+							<Icon svg={TrashIcon} /> Delete track
 						</button>
 					</>
 				)}

@@ -1,12 +1,19 @@
+import { ReactComponent as PauseIcon } from "assets/icons/pause.svg";
+import { ReactComponent as PlayIcon } from "assets/icons/play.svg";
+import { ReactComponent as PlusIcon } from "assets/icons/plus.svg";
+import { ReactComponent as RewindIcon } from "assets/icons/rewind.svg";
+import Icon from "components/icon";
 import Track, {
 	type Track as TrackType
 } from "components/track";
 import useAudio, { Synthesiser } from "lib/audio";
 import { darken } from "lib/color";
-import useMidi from "lib/midi";
+import useMidi, {
+	MidiNoteWithDuration
+} from "lib/midi";
 import usePlayback from "lib/playback";
 import { concat, withoutIndex } from "lib/state";
-import { classes, styleVars } from "lib/utils";
+import { styleVars } from "lib/utils";
 import { useState } from "react";
 import "./tracks.css";
 
@@ -28,7 +35,8 @@ const Tracks = () => {
 		playing,
 		pause,
 		reset,
-		cancel
+		cancel,
+		setTime
 	} = usePlayback({
 		bpm: 100,
 		signature: [4, 4],
@@ -38,89 +46,98 @@ const Tracks = () => {
 		[
 			{
 				start: 0,
-				end: units.millisecondsPerBar,
-				notes: [
-					{
-						note: 69,
-						velocity: 127,
-						time: (0 * units.millisecondsPerBeat) / 4,
-						duration: units.millisecondsPerBeat / 2
-					},
-					{
-						note: 69 - 5,
-						velocity: 127,
-						time: (2 * units.millisecondsPerBeat) / 4,
-						duration: units.millisecondsPerBeat / 4
-					},
-					{
-						note: 69 - 5,
-						velocity: 127,
-						time: (3 * units.millisecondsPerBeat) / 4,
-						duration: units.millisecondsPerBeat / 4
-					},
-					{
-						note: 69 - 3,
-						velocity: 127,
-						time: (4 * units.millisecondsPerBeat) / 4,
-						duration: units.millisecondsPerBeat / 2
-					},
-					{
-						note: 69 - 5,
-						velocity: 127,
-						time: (6 * units.millisecondsPerBeat) / 4,
-						duration: units.millisecondsPerBeat / 2
-					},
-					{
-						note: 69 - 1,
-						velocity: 127,
-						time: (10 * units.millisecondsPerBeat) / 4,
-						duration: units.millisecondsPerBeat / 2
-					},
-					{
-						note: 69,
-						velocity: 127,
-						time: (12 * units.millisecondsPerBeat) / 4,
-						duration: units.millisecondsPerBeat
-					}
-				]
-			}
-		],
-		[
+				end: units.millisecondsPerBar * 2,
+				notes: (
+					[
+						[81, 2],
+						[76, 1],
+						[74, 1],
+						[73, 2],
+						[null, 1],
+						[73, 1],
+						[73, 1],
+						[74, 1],
+						[76, 1],
+						[78, 1],
+						[74, 2],
+						[null, 2],
+						[78, 1],
+						[76, 1],
+						[74, 1],
+						[73, 1],
+						[71, 1],
+						[73, 1],
+						[74, 1],
+						[78, 1],
+						[76, 1],
+						[74, 1],
+						[73, 1],
+						[71, 1],
+						[69, 2]
+					] as [null | number, number][]
+				)
+					.map(
+						([note, duration], i, all) =>
+							note && {
+								note,
+								velocity: 127,
+								time:
+									all
+										.slice(0, i)
+										.map(([, d]) => d)
+										.reduce((x, d) => x + d, 0) *
+									(units.millisecondsPerBeat / 4),
+								duration:
+									(units.millisecondsPerBeat / 4) *
+									duration
+							}
+					)
+					.filter(Boolean) as MidiNoteWithDuration[]
+			},
 			{
-				start: 0,
-				end: units.millisecondsPerBar,
-				notes: [
-					{
-						note: 69 - 17,
-						velocity: 127,
-						time: 0,
-						duration: units.millisecondsPerBeat
-					},
-					{
-						note: 69 - 19,
-						velocity: 127,
-						time: (2 * units.millisecondsPerBeat) / 2,
-						duration: units.millisecondsPerBeat / 2
-					},
-					{
-						note: 69 - 20,
-						velocity: 127,
-						time: (3 * units.millisecondsPerBeat) / 2,
-						duration: units.millisecondsPerBeat
-					},
-					{
-						note: 69 - 22,
-						velocity: 127,
-						time: (5 * units.millisecondsPerBeat) / 2,
-						duration: units.millisecondsPerBeat / 2
-					},
-					{
-						note: 69 - 24,
-						velocity: 127,
-						time: (6 * units.millisecondsPerBeat) / 2,
-						duration: units.millisecondsPerBeat
-					}
-				]
+				start: units.millisecondsPerBar * 2,
+				end: units.millisecondsPerBar * 4,
+				notes: (
+					[
+						[73, 1],
+						[71, 1],
+						[73, 2],
+						[73, 2],
+						[71, 1],
+						[73, 1],
+						[74, 2],
+						[73, 1],
+						[71, 1],
+						[73, 2],
+						[69, 2],
+						[69, 1],
+						[71, 1],
+						[73, 1],
+						[74, 1],
+						[73, 1],
+						[71, 1],
+						[69, 1],
+						[76, 1],
+						[73, 2]
+					] as [number | null, number][]
+				)
+					.map(
+						([note, duration], i, all) =>
+							note && {
+								note,
+								velocity: 127,
+								time:
+									all
+										.slice(0, i)
+										.map(([, d]) => d)
+										.reduce((x, d) => x + d, 0) *
+									(units.millisecondsPerBeat / 4),
+								duration:
+									(units.millisecondsPerBeat / 4) *
+									duration
+							}
+					)
+					.filter(Boolean) as MidiNoteWithDuration[]
 			}
 		]
 	]);
@@ -131,6 +148,9 @@ const Tracks = () => {
 
 	const grey = `#F9F9F9`;
 	const darkerGrey = darken(grey, 0.2);
+
+	const [pos, setPos] = useState<number>();
+	const [dragging, setDragging] = useState(false);
 
 	return (
 		<div
@@ -160,7 +180,7 @@ const Tracks = () => {
 							synth: organ
 						})
 					}>
-					&nbsp; |&lt; &nbsp;
+					<Icon svg={RewindIcon} />
 				</button>
 				<button
 					onClick={() => {
@@ -175,18 +195,35 @@ const Tracks = () => {
 						}
 						pause();
 					}}>
-					&nbsp;
-					{playing ? "||" : ">"}
-					&nbsp;
+					{playing ? (
+						<Icon svg={PauseIcon} />
+					) : (
+						<Icon svg={PlayIcon} />
+					)}
 				</button>
 			</div>
 			<div className="tracks">
-				<div className={classes(["timeline"])}>
+				<div className="timeline">
 					{/* TODO: Dragging */}
 					<div
 						className="timeline-thumb"
+						onMouseDown={e => {
+							setDragging(true);
+						}}
+						onMouseMove={e => {
+							if (!dragging) return;
+							setPos(e.clientX - 32);
+						}}
+						onMouseUp={() => {
+							setTime(
+								pos! / units.pixelsPerMillisecond
+							);
+							setPos(undefined);
+							setDragging(false);
+						}}
 						style={{
 							left: `${
+								pos ??
 								time * units.pixelsPerMillisecond
 							}px`
 						}}
@@ -196,7 +233,7 @@ const Tracks = () => {
 					className="timeline-cursor"
 					style={{
 						left: `${
-							time * units.pixelsPerMillisecond
+							pos ?? time * units.pixelsPerMillisecond
 						}px`
 					}}
 				/>
@@ -218,7 +255,7 @@ const Tracks = () => {
 				onClick={() =>
 					setTracks(concat<TrackType>([]))
 				}>
-				Add track
+				<Icon svg={PlusIcon} /> Add track
 			</button>
 		</div>
 	);

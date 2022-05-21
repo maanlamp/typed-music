@@ -93,14 +93,16 @@ const usePlayback = ({
 
 	const reset = ({
 		tracks,
-		synth
+		synth,
+		time = 0
 	}: {
 		tracks: Recording[][];
 		synth: Synthesiser;
+		time?: number;
 	}) => {
 		cancel();
-		setTime(0);
-		if (playing) playback({ tracks, synth, time: 0 });
+		setTime(time);
+		if (playing) playback({ tracks, synth, time });
 	};
 
 	const pause = () => setPlaying(!playing);
@@ -112,7 +114,8 @@ const usePlayback = ({
 		playing,
 		reset,
 		pause,
-		cancel
+		cancel,
+		setTime
 	};
 };
 
