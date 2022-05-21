@@ -27,7 +27,8 @@ const Tracks = () => {
 		time,
 		playing,
 		setPlaying,
-		setTime
+		setTime,
+		cancel
 	} = usePlayback({
 		bpm: 100,
 		signature: [4, 4],
@@ -119,13 +120,16 @@ const Tracks = () => {
 				</button>
 				<button
 					onClick={() => {
+						if (!playing) {
+							playback({
+								tracks,
+								synth: organ,
+								time
+							});
+						} else {
+							cancel(tracks);
+						}
 						setPlaying(!playing);
-						// TODO: Actually properly time notes when (un)pausing
-						tracks.forEach(track =>
-							track.forEach(recording =>
-								playback(recording, organ)
-							)
-						);
 					}}>
 					&nbsp;
 					{playing ? "||" : ">"}

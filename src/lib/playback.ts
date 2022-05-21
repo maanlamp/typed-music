@@ -36,16 +36,40 @@ const usePlayback = ({
 			millisecondsPerBeat * beatsPerBar
 	};
 
-	const playback = (
-		recording: Recording,
-		synth: Synthesiser
-	) => {
-		for (const note of recording.notes) {
-			audio.play({
-				note,
-				synth,
-				afterMs: recording.start + note.time
-			});
+	const playback = ({
+		tracks,
+		synth,
+		time = 0
+	}: {
+		tracks: Recording[][];
+		synth: Synthesiser;
+		time?: number;
+	}) => {
+		for (const track of tracks) {
+			for (const recording of track) {
+				for (const note of recording.notes) {
+					const afterMs =
+						recording.start + note.time - time;
+					if (afterMs < 0) continue;
+
+					audio.play({
+						note,
+						synth,
+						afterMs,
+						time
+					});
+				}
+			}
+		}
+	};
+
+	const cancel = (tracks: Recording[][]) => {
+		for (const track of tracks) {
+			for (const recording of track) {
+				for (const note of recording.notes) {
+					audio.stop(note.note);
+				}
+			}
 		}
 	};
 
@@ -79,7 +103,8 @@ const usePlayback = ({
 		time,
 		playing,
 		setPlaying,
-		setTime
+		setTime,
+		cancel
 	};
 };
 
