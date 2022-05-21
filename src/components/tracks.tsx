@@ -26,8 +26,8 @@ const Tracks = () => {
 		units,
 		time,
 		playing,
-		setPlaying,
-		setTime,
+		pause,
+		reset,
 		cancel
 	} = usePlayback({
 		bpm: 100,
@@ -84,6 +84,44 @@ const Tracks = () => {
 					}
 				]
 			}
+		],
+		[
+			{
+				start: 0,
+				end: units.millisecondsPerBar,
+				notes: [
+					{
+						note: 69 - 17,
+						velocity: 127,
+						time: 0,
+						duration: units.millisecondsPerBeat
+					},
+					{
+						note: 69 - 19,
+						velocity: 127,
+						time: (2 * units.millisecondsPerBeat) / 2,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69 - 20,
+						velocity: 127,
+						time: (3 * units.millisecondsPerBeat) / 2,
+						duration: units.millisecondsPerBeat
+					},
+					{
+						note: 69 - 22,
+						velocity: 127,
+						time: (5 * units.millisecondsPerBeat) / 2,
+						duration: units.millisecondsPerBeat / 2
+					},
+					{
+						note: 69 - 24,
+						velocity: 127,
+						time: (6 * units.millisecondsPerBeat) / 2,
+						duration: units.millisecondsPerBeat
+					}
+				]
+			}
 		]
 	]);
 	useMidi({
@@ -115,7 +153,13 @@ const Tracks = () => {
 				<span>{volume}</span>
 			</div>
 			<div>
-				<button onClick={() => setTime(0)}>
+				<button
+					onClick={() =>
+						reset({
+							tracks,
+							synth: organ
+						})
+					}>
 					&nbsp; |&lt; &nbsp;
 				</button>
 				<button
@@ -127,9 +171,9 @@ const Tracks = () => {
 								time
 							});
 						} else {
-							cancel(tracks);
+							cancel();
 						}
-						setPlaying(!playing);
+						pause();
 					}}>
 					&nbsp;
 					{playing ? "||" : ">"}

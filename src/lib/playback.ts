@@ -63,14 +63,8 @@ const usePlayback = ({
 		}
 	};
 
-	const cancel = (tracks: Recording[][]) => {
-		for (const track of tracks) {
-			for (const recording of track) {
-				for (const note of recording.notes) {
-					audio.stop(note.note);
-				}
-			}
-		}
+	const cancel = () => {
+		audio.stop();
 	};
 
 	useEffect(() => {
@@ -97,13 +91,27 @@ const usePlayback = ({
 		};
 	}, [playing]);
 
+	const reset = ({
+		tracks,
+		synth
+	}: {
+		tracks: Recording[][];
+		synth: Synthesiser;
+	}) => {
+		cancel();
+		setTime(0);
+		if (playing) playback({ tracks, synth, time: 0 });
+	};
+
+	const pause = () => setPlaying(!playing);
+
 	return {
 		units,
 		playback,
 		time,
 		playing,
-		setPlaying,
-		setTime,
+		reset,
+		pause,
 		cancel
 	};
 };
