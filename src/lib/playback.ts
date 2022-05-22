@@ -55,8 +55,7 @@ const usePlayback = ({
 					audio.play({
 						note,
 						synth,
-						afterMs,
-						time
+						afterMs
 					});
 				}
 			}

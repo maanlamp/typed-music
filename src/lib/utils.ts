@@ -57,3 +57,8 @@ export const classes = (classes: Classes) =>
 		.flat(Infinity as 0)
 		.filter(isTruthy)
 		.join(" ");
+
+export const repeat =
+	(n: number) =>
+	<T>(xs: T | T[]) =>
+		range(n).reduce(all => all.concat(xs), [] as T[]);

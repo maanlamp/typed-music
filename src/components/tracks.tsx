@@ -139,6 +139,49 @@ const Tracks = () => {
 					)
 					.filter(Boolean) as MidiNoteWithDuration[]
 			}
+		],
+		[
+			{
+				start: units.millisecondsPerBar * 2,
+				end: units.millisecondsPerBar * 4,
+				notes: (
+					[
+						[45, 3],
+						[null, 1],
+						[40, 3],
+						[null, 1],
+						[45, 3],
+						[null, 1],
+						[40, 3],
+						[null, 1],
+						[45, 3],
+						[null, 1],
+						[40, 3],
+						[null, 1],
+						[45, 3],
+						[null, 1],
+						[40, 3],
+						[null, 1]
+					] as [number | null, number][]
+				)
+					.map(
+						([note, duration], i, all) =>
+							note && {
+								note,
+								velocity: 127,
+								time:
+									all
+										.slice(0, i)
+										.map(([, d]) => d)
+										.reduce((x, d) => x + d, 0) *
+									(units.millisecondsPerBeat / 4),
+								duration:
+									(units.millisecondsPerBeat / 4) *
+									duration
+							}
+					)
+					.filter(Boolean) as MidiNoteWithDuration[]
+			}
 		]
 	]);
 	useMidi({

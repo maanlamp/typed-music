@@ -52,13 +52,11 @@ const useAudio = (props?: UseAudioParams) => {
 	const play = ({
 		note,
 		synth,
-		afterMs,
-		time = 0
+		afterMs = 0
 	}: {
 		note: MidiNote | MidiNoteWithDuration;
 		synth: Synthesiser;
 		afterMs?: number;
-		time?: number;
 	}) => {
 		for (const synthNode of synth) {
 			const oscillator =
@@ -96,15 +94,11 @@ const useAudio = (props?: UseAudioParams) => {
 			})(nodes.current);
 
 			oscillator.start(
-				AUDIO_CONTEXT.currentTime +
-					(afterMs ?? 0) / 1000
+				AUDIO_CONTEXT.currentTime + afterMs / 1000
 			);
 
 			if (isMidiNoteWithDuration(note)) {
-				stop(
-					note.note,
-					(afterMs ?? 0) + note.duration
-				);
+				stop(note.note, afterMs + note.duration);
 			}
 		}
 	};
