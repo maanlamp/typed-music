@@ -105,15 +105,13 @@ const usePlayback = ({
 		if (playing) playback({ tracks, synth, time });
 	};
 
-	const pause = () => setPlaying(!playing);
-
 	return {
 		units,
 		playback,
 		time,
 		playing,
 		reset,
-		pause,
+		setPlaying,
 		cancel,
 		setTime
 	};

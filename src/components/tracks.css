@@ -6,6 +6,7 @@
 	height: 16px;
 	background: var(--darker-grey);
 	position: relative;
+	cursor: pointer;
 }
 
 .tracks-spacer {
@@ -19,7 +20,6 @@
 	background: black;
 	position: absolute;
 	transform: translateX(-50%);
-	cursor: pointer;
 	transition: transform 0.1s ease;
 	z-index: 2;
 }

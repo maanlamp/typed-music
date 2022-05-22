@@ -5,12 +5,18 @@
 	cursor: pointer;
 	border-radius: 0.1rem;
 	transition: all 0.1s ease;
+	background: var(--button-color);
+	font-weight: 700;
 }
 
 .button:hover,
 .button:focus {
 	outline: none;
 	box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.button:active {
+	transform: scale(0.9);
 }
 
 .button.round {

@@ -52,7 +52,14 @@ const TrackThumb = ({
 				<Button round onClick={remove}>
 					<Icon svg={TrashIcon} />
 				</Button>
-				<Button round onClick={() => setSolo(!solo)}>
+				<Button
+					round
+					onClick={() => {
+						if (!solo) {
+							setMuted(false);
+						}
+						setSolo(!solo);
+					}}>
 					{solo ? "x" : <Icon svg={HeadphonesIcon} />}
 				</Button>
 				<Button round onClick={() => setMuted(!muted)}>
@@ -75,6 +82,7 @@ const TrackThumb = ({
 			</Row>
 			<Column>
 				<input
+					disabled={muted}
 					defaultValue={volume[0] * 100}
 					type="range"
 					onChange={({ target: { value } }) => {
@@ -88,6 +96,7 @@ const TrackThumb = ({
 				/>
 				{!mono && (
 					<input
+						disabled={muted}
 						defaultValue={volume[1] * 100}
 						type="range"
 						onChange={({ target: { value } }) => {

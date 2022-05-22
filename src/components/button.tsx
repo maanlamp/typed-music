@@ -1,5 +1,6 @@
 import Icon, { IconProps } from "components/icon";
 import { classes } from "components/layout";
+import { styleVars } from "lib/utils";
 import React, { ReactNode } from "react";
 import "./button.css";
 
@@ -8,15 +9,18 @@ type ButtonProps = Readonly<{
 	icon?: IconProps["svg"];
 	children?: ReactNode;
 	round?: boolean;
+	color?: string;
 }>;
 
 const Button = ({
 	onClick,
 	icon,
 	children,
-	round
+	round,
+	color
 }: ButtonProps) => (
 	<button
+		style={styleVars({ buttonColor: color }) as any}
 		onClick={onClick}
 		className={classes([
 			"flex-inline flex-row button axis-main-center axis-cross-center gap-small",

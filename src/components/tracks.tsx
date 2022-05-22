@@ -1,17 +1,20 @@
+import { ReactComponent as MenuIcon } from "assets/icons/menu.svg";
 import { ReactComponent as PauseIcon } from "assets/icons/pause.svg";
 import { ReactComponent as PlayIcon } from "assets/icons/play.svg";
 import { ReactComponent as PlusIcon } from "assets/icons/plus.svg";
 import { ReactComponent as FilledRecordIcon } from "assets/icons/record-solid.svg";
 import { ReactComponent as RecordIcon } from "assets/icons/record.svg";
 import { ReactComponent as RewindIcon } from "assets/icons/rewind.svg";
+import { ReactComponent as VolumeIcon } from "assets/icons/volume.svg";
 import Button from "components/button";
+import Center from "components/center";
 import Column from "components/column";
 import {
 	CrossAxisAlignment,
 	MainAxisAlignment
 } from "components/flex";
 import Icon from "components/icon";
-import { Padding } from "components/layout";
+import { Gap, Padding } from "components/layout";
 import Row from "components/row";
 import Track, {
 	type Track as TrackType
@@ -44,7 +47,7 @@ const Tracks = () => {
 		units,
 		time,
 		playing,
-		pause,
+		setPlaying,
 		reset,
 		cancel,
 		setTime
@@ -53,6 +56,9 @@ const Tracks = () => {
 		signature: [4, 4],
 		audio
 	});
+
+	// TODO: Move recording/solo/mono/track state into global state
+	// Maybe start using reducers?
 	const [tracks, setTracks] = useState<TrackType[]>([
 		{
 			recordings: [
@@ -266,7 +272,8 @@ const Tracks = () => {
 				grey,
 				darkerGrey,
 				pixelsPerBar: `${units.pixelsPerBeat}px`
-			})}>
+			})}
+			grow>
 			<Row
 				mainAxisAlignment={
 					MainAxisAlignment.SpaceBetween
@@ -276,8 +283,9 @@ const Tracks = () => {
 				<Row
 					crossAxisAlignment={
 						CrossAxisAlignment.Center
-					}>
-					<span>Gain</span>
+					}
+					gap={Gap.Small}>
+					<Icon svg={VolumeIcon} />
 					<input
 						defaultValue={volume * 100}
 						type="range"
@@ -312,7 +320,7 @@ const Tracks = () => {
 							} else {
 								cancel();
 							}
-							pause();
+							setPlaying(!playing);
 						}}>
 						{playing ? (
 							<Icon svg={PauseIcon} />
@@ -324,26 +332,20 @@ const Tracks = () => {
 						round
 						onClick={() => {
 							setRecording(!recording);
-							playback({
-								tracks,
-								synth: organ,
-								time
-							});
-							pause();
 						}}>
 						{recording ? (
 							<Icon
 								svg={FilledRecordIcon}
-								color="red"
+								color={darken("#ffffff", 0.4)}
 							/>
 						) : (
 							<Icon svg={RecordIcon} />
 						)}
 					</Button>
 				</div>
-				<div>Monkey :)</div>
+				<Button round icon={MenuIcon} />
 			</Row>
-			<Row className="tracks" grow>
+			<Row classes="tracks" grow>
 				<Column>
 					<div className="tracks-spacer" />
 					{tracks.map((track, i) => (
@@ -359,6 +361,10 @@ const Tracks = () => {
 						/>
 					))}
 					<Button
+						color={
+							colors[tracks.length % colors.length] ??
+							colors[0]
+						}
 						onClick={() =>
 							setTracks(
 								concat<TrackType>({ recordings: [] })
@@ -371,32 +377,35 @@ const Tracks = () => {
 				<Column grow>
 					<Row
 						classes="timeline"
+						onMouseDown={(e: MouseEvent) => {
+							setDragging(true);
+							setPos(
+								Math.max(0, e.clientX - leftOffset)
+							);
+						}}
 						onMouseMove={(e: MouseEvent) => {
 							if (!dragging) return;
 							setPos(
 								Math.max(0, e.clientX - leftOffset)
 							);
+						}}
+						onMouseUp={() => {
+							const time =
+								pos! / units.pixelsPerMillisecond;
+							setTime(time);
+							setPos(undefined);
+							setDragging(false);
+							if (playing) {
+								cancel();
+								playback({
+									tracks,
+									synth: organ,
+									time
+								});
+							}
 						}}>
 						<div
 							className="timeline-thumb"
-							onMouseDown={() => {
-								setDragging(true);
-							}}
-							onMouseUp={() => {
-								const time =
-									pos! / units.pixelsPerMillisecond;
-								setTime(time);
-								setPos(undefined);
-								setDragging(false);
-								if (playing) {
-									cancel();
-									playback({
-										tracks,
-										synth: organ,
-										time
-									});
-								}
-							}}
 							style={{
 								left: `${
 									pos ??
@@ -427,6 +436,15 @@ const Tracks = () => {
 					))}
 				</Column>
 			</Row>
+			<Column className="detail-view" grow>
+				<Center grow>
+					<span>
+						TODO: View currently selected thing in
+						detail, such as a synth, or a
+						track/recording?
+					</span>
+				</Center>
+			</Column>
 		</Column>
 	);
 };
