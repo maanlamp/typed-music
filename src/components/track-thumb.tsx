@@ -46,7 +46,7 @@ const TrackThumb = ({
 			classes="track-thumb"
 			crossAxisAlignment={CrossAxisAlignment.Center}
 			gap={Gap.Small}
-			padding={Padding.Small}>
+			padding={Padding.Medium}>
 			<Icon svg={CubeIcon} />
 			<Row>
 				<Button round onClick={remove}>

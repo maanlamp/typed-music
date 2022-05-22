@@ -7,7 +7,6 @@ import { ReactComponent as RecordIcon } from "assets/icons/record.svg";
 import { ReactComponent as RewindIcon } from "assets/icons/rewind.svg";
 import { ReactComponent as VolumeIcon } from "assets/icons/volume.svg";
 import Button from "components/button";
-import Center from "components/center";
 import Column from "components/column";
 import {
 	CrossAxisAlignment,
@@ -345,98 +344,116 @@ const Tracks = () => {
 				</div>
 				<Button round icon={MenuIcon} />
 			</Row>
-			<Row classes="tracks" grow>
-				<Column>
-					<div className="tracks-spacer" />
-					{tracks.map((track, i) => (
-						<TrackThumb
-							key={i}
-							color={
-								colors[i % colors.length] ?? colors[0]
-							}
-							remove={() => setTracks(withoutIndex(i))}
-							mono={track.mono}
-							muted={track.muted}
-							solo={track.solo}
-						/>
+			<Row grow>
+				{/* <Column classes="intstrument-rack">
+					<h2>Instruments</h2>
+					{instruments.map(instrument => (
+						<Row>
+							<Icon svg={CubeIcon} />
+							<span>{instrument.id}</span>
+						</Row>
 					))}
-					<Button
-						color={
-							colors[tracks.length % colors.length] ??
-							colors[0]
-						}
-						onClick={() =>
-							setTracks(
-								concat<TrackType>({ recordings: [] })
-							)
-						}
-						icon={PlusIcon}>
-						<span>Add track</span>
-					</Button>
-				</Column>
-				<Column grow>
-					<Row
-						classes="timeline"
-						onMouseDown={(e: MouseEvent) => {
-							setDragging(true);
-							setPos(
-								Math.max(0, e.clientX - leftOffset)
-							);
-						}}
-						onMouseMove={(e: MouseEvent) => {
-							if (!dragging) return;
-							setPos(
-								Math.max(0, e.clientX - leftOffset)
-							);
-						}}
-						onMouseUp={() => {
-							const time =
-								pos! / units.pixelsPerMillisecond;
-							setTime(time);
-							setPos(undefined);
-							setDragging(false);
-							if (playing) {
-								cancel();
-								playback({
-									tracks,
-									synth: organ,
-									time
-								});
-							}
-						}}>
-						<div
-							className="timeline-thumb"
-							style={{
-								left: `${
-									pos ??
-									time * units.pixelsPerMillisecond
-								}px`
-							}}
-						/>
-						<div
-							className="timeline-cursor"
-							style={{
-								left: `${
-									pos ??
-									time * units.pixelsPerMillisecond
-								}px`,
-								height: `calc(16px + ${tracks.length} * 4rem)`
-							}}
-						/>
-					</Row>
-					{tracks?.map((track, i) => (
-						<Track
-							key={i}
-							track={track}
-							units={units}
+				</Column> */}
+				<Row classes="tracks" grow>
+					<Column>
+						<div className="tracks-spacer" />
+						{tracks.map((track, i) => (
+							<TrackThumb
+								key={i}
+								color={
+									colors[i % colors.length] ??
+									colors[0]
+								}
+								remove={() =>
+									setTracks(withoutIndex(i))
+								}
+								mono={track.mono}
+								muted={track.muted}
+								solo={track.solo}
+							/>
+						))}
+						<Button
 							color={
-								colors[i % colors.length] ?? colors[0]
+								colors[
+									tracks.length % colors.length
+								] ?? colors[0]
 							}
-						/>
-					))}
-				</Column>
+							onClick={() =>
+								setTracks(
+									concat<TrackType>({ recordings: [] })
+								)
+							}
+							icon={PlusIcon}>
+							<span>Add track</span>
+						</Button>
+					</Column>
+					<Column
+						style={{ overflowX: "scroll" } as any}
+						grow>
+						<Row
+							classes="timeline"
+							onMouseDown={(e: MouseEvent) => {
+								setDragging(true);
+								setPos(
+									Math.max(0, e.clientX - leftOffset)
+								);
+							}}
+							onMouseMove={(e: MouseEvent) => {
+								if (!dragging) return;
+								setPos(
+									Math.max(0, e.clientX - leftOffset)
+								);
+							}}
+							onMouseUp={() => {
+								const time =
+									pos! / units.pixelsPerMillisecond;
+								setTime(time);
+								setPos(undefined);
+								setDragging(false);
+								if (playing) {
+									cancel();
+									playback({
+										tracks,
+										synth: organ,
+										time
+									});
+								}
+							}}>
+							<div
+								className="timeline-thumb"
+								style={{
+									left: `${
+										pos ??
+										time * units.pixelsPerMillisecond
+									}px`
+								}}
+							/>
+							<div
+								className="timeline-cursor"
+								style={{
+									left: `${
+										pos ??
+										time * units.pixelsPerMillisecond
+									}px`,
+									height: `calc(16px + ${tracks.length} * 4rem)`
+								}}
+							/>
+						</Row>
+						{tracks?.map((track, i) => (
+							<Track
+								key={i}
+								track={track}
+								units={units}
+								color={
+									colors[i % colors.length] ??
+									colors[0]
+								}
+							/>
+						))}
+					</Column>
+				</Row>
 			</Row>
-			<Column className="detail-view" grow>
+			{/* <Column className="detail-view" grow>
 				<Center grow>
 					<span>
 						TODO: View currently selected thing in
@@ -444,7 +461,7 @@ const Tracks = () => {
 						track/recording?
 					</span>
 				</Center>
-			</Column>
+			</Column> */}
 		</Column>
 	);
 };
@@ -486,5 +503,7 @@ const organ: Synthesiser = {
 		}
 	]
 };
+
+const instruments: Synthesiser[] = [organ];
 
 export default Tracks;
