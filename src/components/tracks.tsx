@@ -329,6 +329,7 @@ const Tracks = () => {
 								synth: organ,
 								time
 							});
+							pause();
 						}}>
 						{recording ? (
 							<Icon
