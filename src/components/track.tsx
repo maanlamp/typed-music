@@ -1,64 +1,47 @@
-import { ReactComponent as TrashIcon } from "assets/icons/trash.svg";
-import Icon from "components/icon";
 import Recording, {
 	type Recording as RecordingType
 } from "components/recording";
+import Row from "components/row";
 import usePlayback from "lib/playback";
-import { classes, styleVars } from "lib/utils";
-import { useState } from "react";
+import { styleVars } from "lib/utils";
 import "./track.css";
 
-export type Track = RecordingType[];
+export type Track = Readonly<{
+	solo?: boolean;
+	muted?: boolean;
+	mono?: boolean;
+	recordings: RecordingType[];
+}>;
 
 type TrackProps = Readonly<{
 	track: Track;
 	color: string;
 	units: ReturnType<typeof usePlayback>["units"];
-	remove: () => void;
 }>;
 
 const Track = ({
 	track,
 	color,
-	units,
-	remove
-}: TrackProps) => {
-	const [open, setOpen] = useState(false);
-
-	const toggleOpen = () => setOpen(!open);
-
-	return (
-		<div
-			className="track-container"
-			style={styleVars({
-				color
-			})}>
-			<div
-				className={classes([
-					"track-thumb",
-					open && "open"
-				])}
-				onClick={toggleOpen}>
-				{open && (
-					<>
-						<button onClick={remove}>
-							<Icon svg={TrashIcon} /> Delete track
-						</button>
-					</>
-				)}
-			</div>
-			<div className="track">
-				{track.map(recording => (
-					<Recording
-						key={recording.start}
-						recording={recording}
-						color={color}
-						units={units}
-					/>
-				))}
-			</div>
+	units
+}: TrackProps) => (
+	<Row
+		classes="track-container"
+		style={styleVars({
+			color
+		})}>
+		<div className="track">
+			{track.recordings.map(recording => (
+				<Recording
+					key={recording.start}
+					recording={recording}
+					color={
+						track.solo || !track.muted ? color : "grey"
+					}
+					units={units}
+				/>
+			))}
 		</div>
-	);
-};
+	</Row>
+);
 
 export default Track;

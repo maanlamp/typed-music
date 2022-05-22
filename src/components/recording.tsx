@@ -1,8 +1,9 @@
+import { classes } from "components/layout";
 import Note from "components/note";
 import { darken, withOpacity } from "lib/color";
 import { MidiNoteWithDuration } from "lib/midi";
 import usePlayback from "lib/playback";
-import { classes, styleVars } from "lib/utils";
+import { styleVars } from "lib/utils";
 import { useState } from "react";
 import "./recording.css";
 
@@ -41,17 +42,24 @@ const Recording = ({
 
 	return (
 		<div
+			tabIndex={0}
 			onClick={toggleSelected}
+			onKeyDown={e => {
+				if (e.key !== " ") return;
+				toggleSelected();
+			}}
 			className={classes([
 				"recording",
 				selected && "selected"
 			])}
-			style={styleVars({
-				left,
-				width,
-				border,
-				background
-			})}>
+			style={
+				styleVars({
+					left,
+					width,
+					border,
+					background
+				}) as any
+			}>
 			{recording.notes.map((note, i) => (
 				<Note
 					key={i}

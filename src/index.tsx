@@ -1,3 +1,5 @@
+import Column from "components/column";
+import "components/layout.css";
 import Tracks from "components/tracks";
 import "index.css";
 import React from "react";
@@ -9,9 +11,9 @@ const App = () => {
 	//
 
 	return (
-		<main>
+		<Column as="main" grow>
 			<Tracks />
-		</main>
+		</Column>
 	);
 };
 

@@ -1,8 +1,3 @@
-.track-container {
-	display: flex;
-	width: 100%;
-}
-
 .track {
 	margin-top: "4px";
 	position: relative;
@@ -20,16 +15,5 @@
 
 .track-thumb {
 	background: var(--color);
-	width: 32px;
-	cursor: pointer;
-	transition: all 0.1s ease;
-	z-index: 1;
-}
-
-.track-thumb:not(.open):hover {
-	transform: scale(0.9);
-}
-
-.track-thumb.open {
-	width: unset;
+	height: 4rem;
 }

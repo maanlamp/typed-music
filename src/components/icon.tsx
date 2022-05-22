@@ -1,4 +1,4 @@
-type IconProps = Readonly<{
+export type IconProps = Readonly<{
 	svg: React.FunctionComponent<
 		React.SVGProps<SVGSVGElement> & {
 			title?: string | undefined;
@@ -13,7 +13,12 @@ const Icon = ({
 	size = 16,
 	color
 }: IconProps) => (
-	<Svg width={size} height={size} fill={color} />
+	<Svg
+		className="icon"
+		width={size}
+		height={size}
+		fill={color}
+	/>
 );
 
 export default Icon;

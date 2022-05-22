@@ -8,28 +8,36 @@
 	position: relative;
 }
 
+.tracks-spacer {
+	height: 16px;
+}
+
 .timeline .timeline-thumb {
 	width: 16px;
 	height: 16px;
 	border-radius: 50%;
 	background: black;
 	position: absolute;
-	transform: translateX(calc(32px - 50%));
+	transform: translateX(-50%);
 	cursor: pointer;
 	transition: transform 0.1s ease;
 	z-index: 2;
 }
 
+.timeline-left-offset {
+	background: #646464;
+}
+
 .timeline .timeline-thumb:hover {
-	transform: translateX(calc(32px - 50%)) scale(1.5);
+	transform: translateX(-50%) scale(1.5);
 }
 
 .timeline-cursor {
+	pointer-events: none;
 	position: absolute;
 	width: 2px;
 	background: black;
 	top: 0;
 	bottom: 0;
 	z-index: 1;
-	transform: translateX(31px);
 }

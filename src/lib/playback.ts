@@ -1,4 +1,4 @@
-import { Recording } from "components/recording";
+import { type Track as TrackType } from "components/track";
 import useAudio, { Synthesiser } from "lib/audio";
 import { useEffect, useState } from "react";
 
@@ -41,12 +41,12 @@ const usePlayback = ({
 		synth,
 		time = 0
 	}: {
-		tracks: Recording[][];
+		tracks: TrackType[];
 		synth: Synthesiser;
 		time?: number;
 	}) => {
 		for (const track of tracks) {
-			for (const recording of track) {
+			for (const recording of track.recordings) {
 				for (const note of recording.notes) {
 					const afterMs =
 						recording.start + note.time - time;
@@ -95,7 +95,7 @@ const usePlayback = ({
 		synth,
 		time = 0
 	}: {
-		tracks: Recording[][];
+		tracks: TrackType[];
 		synth: Synthesiser;
 		time?: number;
 	}) => {

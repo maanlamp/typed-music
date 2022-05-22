@@ -35,30 +35,22 @@ export const styleVars = (vars: Record<string, any>) =>
 			`--${camel2kebab(key)}`,
 			value
 		])
-	) as React.CSSProperties;
+	) as CSSStyleDeclaration;
 
 export const isTruthy = <T>(
 	value: Falsy<T>
 ): value is T => Boolean(value);
 
-type Falsy<T> =
-	| T
-	| false
-	| 0
-	| null
-	| undefined
-	| 0n
-	| "";
-type Class = Falsy<string>;
-type Classes = Class | Classes[];
-
-export const classes = (classes: Classes) =>
-	[classes]
-		.flat(Infinity as 0)
-		.filter(isTruthy)
-		.join(" ");
-
 export const repeat =
 	(n: number) =>
 	<T>(xs: T | T[]) =>
 		range(n).reduce(all => all.concat(xs), [] as T[]);
+
+export type Falsy<T> =
+	| T
+	| 0
+	| ""
+	| null
+	| undefined
+	| false
+	| 0n;

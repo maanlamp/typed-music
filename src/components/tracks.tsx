@@ -1,11 +1,22 @@
 import { ReactComponent as PauseIcon } from "assets/icons/pause.svg";
 import { ReactComponent as PlayIcon } from "assets/icons/play.svg";
 import { ReactComponent as PlusIcon } from "assets/icons/plus.svg";
+import { ReactComponent as FilledRecordIcon } from "assets/icons/record-solid.svg";
+import { ReactComponent as RecordIcon } from "assets/icons/record.svg";
 import { ReactComponent as RewindIcon } from "assets/icons/rewind.svg";
+import Button from "components/button";
+import Column from "components/column";
+import {
+	CrossAxisAlignment,
+	MainAxisAlignment
+} from "components/flex";
 import Icon from "components/icon";
+import { Padding } from "components/layout";
+import Row from "components/row";
 import Track, {
 	type Track as TrackType
 } from "components/track";
+import TrackThumb from "components/track-thumb";
 import useAudio, { Synthesiser } from "lib/audio";
 import { darken } from "lib/color";
 import useMidi, {
@@ -43,191 +54,195 @@ const Tracks = () => {
 		audio
 	});
 	const [tracks, setTracks] = useState<TrackType[]>([
-		[
-			{
-				start: 0,
-				end: units.millisecondsPerBar * 2,
-				notes: (
-					[
-						[81, 2],
-						[76, 1],
-						[74, 1],
-						[73, 2],
-						[null, 1],
-						[73, 1],
-						[73, 1],
-						[74, 1],
-						[76, 1],
-						[78, 1],
-						[74, 2],
-						[null, 2],
-						[78, 1],
-						[76, 1],
-						[74, 1],
-						[73, 1],
-						[71, 1],
-						[73, 1],
-						[74, 1],
-						[78, 1],
-						[76, 1],
-						[74, 1],
-						[73, 1],
-						[71, 1],
-						[69, 2]
-					] as [null | number, number][]
-				)
-					.map(
-						([note, duration], i, all) =>
-							note && {
-								note,
-								velocity: 127,
-								time:
-									all
-										.slice(0, i)
-										.map(([, d]) => d)
-										.reduce((x, d) => x + d, 0) *
-									(units.millisecondsPerBeat / 4),
-								duration:
-									(units.millisecondsPerBeat / 4) *
-									duration
-							}
+		{
+			recordings: [
+				{
+					start: 0,
+					end: units.millisecondsPerBar * 2,
+					notes: (
+						[
+							[81, 2],
+							[76, 1],
+							[74, 1],
+							[73, 2],
+							[null, 1],
+							[73, 1],
+							[73, 1],
+							[74, 1],
+							[76, 1],
+							[78, 1],
+							[74, 2],
+							[null, 2],
+							[78, 1],
+							[76, 1],
+							[74, 1],
+							[73, 1],
+							[71, 1],
+							[73, 1],
+							[74, 1],
+							[78, 1],
+							[76, 1],
+							[74, 1],
+							[73, 1],
+							[71, 1],
+							[69, 2]
+						] as [null | number, number][]
 					)
-					.filter(Boolean) as MidiNoteWithDuration[]
-			},
-			{
-				start: units.millisecondsPerBar * 2,
-				end: units.millisecondsPerBar * 4,
-				notes: (
-					[
-						[73, 1],
-						[71, 1],
-						[73, 2],
-						[73, 2],
-						[71, 1],
-						[73, 1],
-						[74, 2],
-						[73, 1],
-						[71, 1],
-						[73, 2],
-						[69, 2],
-						[69, 1],
-						[71, 1],
-						[73, 1],
-						[74, 1],
-						[73, 1],
-						[71, 1],
-						[69, 1],
-						[76, 1],
-						[73, 2]
-					] as [number | null, number][]
-				)
-					.map(
-						([note, duration], i, all) =>
-							note && {
-								note,
-								velocity: 127,
-								time:
-									all
-										.slice(0, i)
-										.map(([, d]) => d)
-										.reduce((x, d) => x + d, 0) *
-									(units.millisecondsPerBeat / 4),
-								duration:
-									(units.millisecondsPerBeat / 4) *
-									duration
-							}
+						.map(
+							([note, duration], i, all) =>
+								note && {
+									note,
+									velocity: 127,
+									time:
+										all
+											.slice(0, i)
+											.map(([, d]) => d)
+											.reduce((x, d) => x + d, 0) *
+										(units.millisecondsPerBeat / 4),
+									duration:
+										(units.millisecondsPerBeat / 4) *
+										duration
+								}
+						)
+						.filter(Boolean) as MidiNoteWithDuration[]
+				},
+				{
+					start: units.millisecondsPerBar * 2,
+					end: units.millisecondsPerBar * 4,
+					notes: (
+						[
+							[73, 1],
+							[71, 1],
+							[73, 2],
+							[73, 2],
+							[71, 1],
+							[73, 1],
+							[74, 2],
+							[73, 1],
+							[71, 1],
+							[73, 2],
+							[69, 2],
+							[69, 1],
+							[71, 1],
+							[73, 1],
+							[74, 1],
+							[73, 1],
+							[71, 1],
+							[69, 1],
+							[76, 1],
+							[73, 2]
+						] as [number | null, number][]
 					)
-					.filter(Boolean) as MidiNoteWithDuration[]
-			},
-			{
-				start: units.millisecondsPerBar * 4,
-				end: units.millisecondsPerBar * 6,
-				notes: (
-					[
-						[73, 1],
-						[71, 1],
-						[73, 2],
-						[73, 2],
-						[71, 1],
-						[73, 1],
-						[74, 2],
-						[73, 1],
-						[71, 1],
-						[73, 2],
-						[69, 2],
-						[69, 1],
-						[71, 1],
-						[73, 1],
-						[74, 1],
-						[73, 1],
-						[71, 1],
-						[69, 1],
-						[76, 1],
-						[73, 2]
-					] as [number | null, number][]
-				)
-					.map(
-						([note, duration], i, all) =>
-							note && {
-								note,
-								velocity: 127,
-								time:
-									all
-										.slice(0, i)
-										.map(([, d]) => d)
-										.reduce((x, d) => x + d, 0) *
-									(units.millisecondsPerBeat / 4),
-								duration:
-									(units.millisecondsPerBeat / 4) *
-									duration
-							}
+						.map(
+							([note, duration], i, all) =>
+								note && {
+									note,
+									velocity: 127,
+									time:
+										all
+											.slice(0, i)
+											.map(([, d]) => d)
+											.reduce((x, d) => x + d, 0) *
+										(units.millisecondsPerBeat / 4),
+									duration:
+										(units.millisecondsPerBeat / 4) *
+										duration
+								}
+						)
+						.filter(Boolean) as MidiNoteWithDuration[]
+				},
+				{
+					start: units.millisecondsPerBar * 4,
+					end: units.millisecondsPerBar * 6,
+					notes: (
+						[
+							[73, 1],
+							[71, 1],
+							[73, 2],
+							[73, 2],
+							[71, 1],
+							[73, 1],
+							[74, 2],
+							[73, 1],
+							[71, 1],
+							[73, 2],
+							[69, 2],
+							[69, 1],
+							[71, 1],
+							[73, 1],
+							[74, 1],
+							[73, 1],
+							[71, 1],
+							[69, 1],
+							[76, 1],
+							[73, 2]
+						] as [number | null, number][]
 					)
-					.filter(Boolean) as MidiNoteWithDuration[]
-			}
-		],
-		[
-			{
-				start: units.millisecondsPerBar * 2,
-				end: units.millisecondsPerBar * 6,
-				notes: (
-					repeat(2)([
-						[45, 3],
-						[null, 1],
-						[40, 3],
-						[null, 1],
-						[45, 3],
-						[null, 1],
-						[40, 3],
-						[null, 1],
-						[45, 3],
-						[null, 1],
-						[40, 3],
-						[null, 1],
-						[45, 3],
-						[null, 1],
-						[40, 3],
-						[null, 1]
-					]) as [number | null, number][]
-				)
-					.map(
-						([note, duration], i, all) =>
-							note && {
-								note,
-								velocity: 127,
-								time:
-									all
-										.slice(0, i)
-										.map(([, d]) => d)
-										.reduce((x, d) => x + d, 0) *
-									(units.millisecondsPerBeat / 4),
-								duration:
-									(units.millisecondsPerBeat / 4) *
-									duration
-							}
+						.map(
+							([note, duration], i, all) =>
+								note && {
+									note,
+									velocity: 127,
+									time:
+										all
+											.slice(0, i)
+											.map(([, d]) => d)
+											.reduce((x, d) => x + d, 0) *
+										(units.millisecondsPerBeat / 4),
+									duration:
+										(units.millisecondsPerBeat / 4) *
+										duration
+								}
+						)
+						.filter(Boolean) as MidiNoteWithDuration[]
+				}
+			]
+		},
+		{
+			recordings: [
+				{
+					start: units.millisecondsPerBar * 2,
+					end: units.millisecondsPerBar * 6,
+					notes: (
+						repeat(2)([
+							[45, 3],
+							[null, 1],
+							[40, 3],
+							[null, 1],
+							[45, 3],
+							[null, 1],
+							[40, 3],
+							[null, 1],
+							[45, 3],
+							[null, 1],
+							[40, 3],
+							[null, 1],
+							[45, 3],
+							[null, 1],
+							[40, 3],
+							[null, 1]
+						]) as [number | null, number][]
 					)
-					.filter(Boolean) as MidiNoteWithDuration[]
-			}
-		]
+						.map(
+							([note, duration], i, all) =>
+								note && {
+									note,
+									velocity: 127,
+									time:
+										all
+											.slice(0, i)
+											.map(([, d]) => d)
+											.reduce((x, d) => x + d, 0) *
+										(units.millisecondsPerBeat / 4),
+									duration:
+										(units.millisecondsPerBeat / 4) *
+										duration
+								}
+						)
+						.filter(Boolean) as MidiNoteWithDuration[]
+				}
+			]
+		}
 	]);
 	useMidi({
 		play: note => audio.play({ note, synth: organ }),
@@ -239,102 +254,166 @@ const Tracks = () => {
 
 	const [pos, setPos] = useState<number>();
 	const [dragging, setDragging] = useState(false);
+	const [recording, setRecording] = useState(false);
+	const leftOffset =
+		document
+			.querySelector(".timeline")
+			?.getBoundingClientRect().left ?? 0;
 
 	return (
-		<div
+		<Column
 			style={styleVars({
 				grey,
 				darkerGrey,
 				pixelsPerBar: `${units.pixelsPerBeat}px`
 			})}>
-			<div>
-				<span>Gain</span>
-				<input
-					defaultValue={volume * 100}
-					type="range"
-					onChange={({ target: { value } }) => {
-						audio.gain.current.gain.value =
-							parseInt(value) / 100;
-						setVolume(audio.gain.current.gain.value);
-					}}
-				/>
-				<span>{volume}</span>
-			</div>
-			<div>
-				<button
-					onClick={() =>
-						reset({
-							tracks,
-							synth: organ
-						})
+			<Row
+				mainAxisAlignment={
+					MainAxisAlignment.SpaceBetween
+				}
+				crossAxisAlignment={CrossAxisAlignment.Center}
+				padding={Padding.Small}>
+				<Row
+					crossAxisAlignment={
+						CrossAxisAlignment.Center
 					}>
-					<Icon svg={RewindIcon} />
-				</button>
-				<button
-					onClick={() => {
-						if (!playing) {
+					<span>Gain</span>
+					<input
+						defaultValue={volume * 100}
+						type="range"
+						onChange={({ target: { value } }) => {
+							audio.gain.current.gain.value =
+								parseInt(value) / 100;
+							setVolume(audio.gain.current.gain.value);
+						}}
+					/>
+					<span>{volume}</span>
+				</Row>
+				<div>
+					<Button
+						round
+						onClick={() =>
+							reset({
+								tracks,
+								synth: organ
+							})
+						}>
+						<Icon svg={RewindIcon} />
+					</Button>
+					<Button
+						round
+						onClick={() => {
+							if (!playing) {
+								playback({
+									tracks,
+									synth: organ,
+									time
+								});
+							} else {
+								cancel();
+							}
+							pause();
+						}}>
+						{playing ? (
+							<Icon svg={PauseIcon} />
+						) : (
+							<Icon svg={PlayIcon} />
+						)}
+					</Button>
+					<Button
+						round
+						onClick={() => {
+							setRecording(!recording);
 							playback({
 								tracks,
 								synth: organ,
 								time
 							});
-						} else {
-							cancel();
-						}
-						pause();
-					}}>
-					{playing ? (
-						<Icon svg={PauseIcon} />
-					) : (
-						<Icon svg={PlayIcon} />
-					)}
-				</button>
-			</div>
-			<div className="tracks">
-				<div className="timeline">
-					{/* TODO: Dragging */}
-					<div
-						className="timeline-thumb"
-						onMouseDown={e => {
-							setDragging(true);
-						}}
-						onMouseMove={e => {
-							if (!dragging) return;
-							setPos(e.clientX - 32);
-						}}
-						onMouseUp={() => {
-							setTime(
-								pos! / units.pixelsPerMillisecond
-							);
-							setPos(undefined);
-							setDragging(false);
-							if (playing) {
-								cancel();
-								playback({
-									tracks,
-									synth: organ,
-									time:
-										pos! / units.pixelsPerMillisecond
-								});
-							}
-						}}
-						style={{
-							left: `${
-								pos ??
-								time * units.pixelsPerMillisecond
-							}px`
-						}}
-					/>
+						}}>
+						{recording ? (
+							<Icon
+								svg={FilledRecordIcon}
+								color="red"
+							/>
+						) : (
+							<Icon svg={RecordIcon} />
+						)}
+					</Button>
 				</div>
-				<div
-					className="timeline-cursor"
-					style={{
-						left: `${
-							pos ?? time * units.pixelsPerMillisecond
-						}px`
-					}}
-				/>
-				<div>
+				<div>Monkey :)</div>
+			</Row>
+			<Row className="tracks" grow>
+				<Column>
+					<div className="tracks-spacer" />
+					{tracks.map((track, i) => (
+						<TrackThumb
+							key={i}
+							color={
+								colors[i % colors.length] ?? colors[0]
+							}
+							remove={() => setTracks(withoutIndex(i))}
+							mono={track.mono}
+							muted={track.muted}
+							solo={track.solo}
+						/>
+					))}
+					<Button
+						onClick={() =>
+							setTracks(
+								concat<TrackType>({ recordings: [] })
+							)
+						}
+						icon={PlusIcon}>
+						<span>Add track</span>
+					</Button>
+				</Column>
+				<Column grow>
+					<Row
+						classes="timeline"
+						onMouseMove={(e: MouseEvent) => {
+							if (!dragging) return;
+							setPos(
+								Math.max(0, e.clientX - leftOffset)
+							);
+						}}>
+						<div
+							className="timeline-thumb"
+							onMouseDown={() => {
+								setDragging(true);
+							}}
+							onMouseUp={() => {
+								const time =
+									pos! / units.pixelsPerMillisecond;
+								setTime(time);
+								setPos(undefined);
+								setDragging(false);
+								if (playing) {
+									cancel();
+									playback({
+										tracks,
+										synth: organ,
+										time
+									});
+								}
+							}}
+							style={{
+								left: `${
+									pos ??
+									time * units.pixelsPerMillisecond
+								}px`
+							}}
+						/>
+						<div
+							className="timeline-cursor"
+							style={{
+								left: `${
+									pos ??
+									time * units.pixelsPerMillisecond
+								}px`,
+								height: `calc(16px + ${tracks.length} * 4rem)`
+							}}
+						/>
+					</Row>
 					{tracks?.map((track, i) => (
 						<Track
 							key={i}
@@ -343,18 +422,11 @@ const Tracks = () => {
 							color={
 								colors[i % colors.length] ?? colors[0]
 							}
-							remove={() => setTracks(withoutIndex(i))}
 						/>
 					))}
-				</div>
-			</div>
-			<button
-				onClick={() =>
-					setTracks(concat<TrackType>([]))
-				}>
-				<Icon svg={PlusIcon} /> Add track
-			</button>
-		</div>
+				</Column>
+			</Row>
+		</Column>
 	);
 };
 

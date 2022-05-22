@@ -1,0 +1,18 @@
+.button {
+	border: none;
+	background: none;
+	padding: 0.5rem;
+	cursor: pointer;
+	border-radius: 0.1rem;
+	transition: all 0.1s ease;
+}
+
+.button:hover,
+.button:focus {
+	outline: none;
+	box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.button.round {
+	border-radius: 50%;
+}
