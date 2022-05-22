@@ -103,7 +103,7 @@ const useAudio = (props?: UseAudioParams) => {
 			if (isMidiNoteWithDuration(note)) {
 				stop(
 					note.note,
-					note.time + note.duration - time
+					(afterMs ?? 0) + note.duration
 				);
 			}
 		}
