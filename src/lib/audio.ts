@@ -16,11 +16,16 @@ type AudioNode = Readonly<{
 // TODO: Reverb? https://developer.mozilla.org/en-US/docs/Web/API/ConvolverNode
 // TODO: attack decay sustain release (ADSR envelope)
 
-export type Synthesiser = Readonly<{
+type SynthNode = Readonly<{
 	type: OscillatorType;
 	detune?: number | ((note: MidiNote) => number);
 	gain?: number | ((note: MidiNote) => number);
-}>[];
+}>;
+
+export type Synthesiser = Readonly<{
+	id: number;
+	nodes: SynthNode[];
+}>;
 
 const MINIMUM_MS_TO_AVOID_CLIPPING = 30;
 const MINIMUM_S_TO_AVOID_CLIPPING =
@@ -41,9 +46,12 @@ const useAudio = (props?: UseAudioParams) => {
 		})()
 	);
 
-	const nodes = useRef<Record<number, AudioNode[]>>(
-		{}
-	);
+	const nodes = useRef<
+		Record<
+			MidiNote["note"],
+			Record<Synthesiser["id"], AudioNode[]>
+		>
+	>({});
 
 	useEffect(() => {
 		gain.current.gain.value = props?.volume ?? 0;
@@ -58,7 +66,9 @@ const useAudio = (props?: UseAudioParams) => {
 		synth: Synthesiser;
 		afterMs?: number;
 	}) => {
-		for (const synthNode of synth) {
+		// TODO: Find a way to create less objects and reuse oscillators
+		// Probably stop using oscillator.start/stop and manipulate its gain instead.
+		for (const synthNode of synth.nodes) {
 			const oscillator =
 				AUDIO_CONTEXT.createOscillator();
 			oscillator.type = synthNode.type;
@@ -83,14 +93,19 @@ const useAudio = (props?: UseAudioParams) => {
 			oscillator.connect(gainNode);
 			gainNode.connect(gain.current);
 			nodes.current = merge<
-				Record<number, AudioNode[]>
+				Record<
+					MidiNote["note"],
+					Record<Synthesiser["id"], AudioNode[]>
+				>
 			>({
-				[note.note]: (
-					nodes.current[note.note] ?? []
-				).concat({
-					oscillator,
-					gain: gainNode
-				})
+				[note.note]: {
+					[synth.id]: (
+						nodes.current[note.note]?.[synth.id] ?? []
+					).concat({
+						oscillator,
+						gain: gainNode
+					})
+				}
 			})(nodes.current);
 
 			oscillator.start(
@@ -98,35 +113,48 @@ const useAudio = (props?: UseAudioParams) => {
 			);
 
 			if (isMidiNoteWithDuration(note)) {
-				stop(note.note, afterMs + note.duration);
+				stop({
+					note: note.note,
+					synth: synth,
+					afterMs: afterMs + note.duration
+				});
 			}
 		}
 	};
 
-	const stop = (note?: number, afterMs?: number) => {
-		if (!note) {
-			return Object.entries(nodes.current).forEach(
-				([note, all]) =>
-					all.forEach(node =>
-						destroy(node, nodes, parseInt(note))
+	const stop = (props?: {
+		note: number;
+		synth: Synthesiser;
+		afterMs?: number;
+	}) => {
+		if (!props) {
+			return Object.values(nodes.current).forEach(
+				instruments =>
+					Object.values(instruments).forEach(nodes =>
+						nodes.forEach(queueStop)
 					)
 			);
 		}
 
-		nodes.current[note]?.forEach(node =>
-			destroy(node, nodes, note, afterMs)
+		nodes.current[props.note][props.synth.id].forEach(
+			node => queueStop(node, props.afterMs)
 		);
 	};
 
-	return { play, stop, gain };
+	console.log(nodes.current);
+
+	const reset = () => {
+		stop();
+		nodes.current = {};
+	};
+
+	console.log(nodes.current);
+
+	return { play, stop, gain, reset };
 };
 
-const destroy = (
+const queueStop = (
 	node: AudioNode,
-	nodes: React.MutableRefObject<
-		Record<number, AudioNode[]>
-	>,
-	note: MidiNote["note"],
 	afterMs: number = 0
 ) => {
 	const afterSeconds = afterMs / 1000;
@@ -150,18 +178,6 @@ const destroy = (
 		);
 
 	node.oscillator.stop(endSeconds);
-
-	setTimeout(() => {
-		const index = nodes.current[note]?.findIndex(
-			x => x === node
-		);
-
-		if (index >= 0)
-			nodes.current[note]?.splice(index, 1);
-
-		if (!nodes.current[note]?.length)
-			delete nodes.current[note];
-	}, afterSeconds * 1000);
 };
 
 export default useAudio;

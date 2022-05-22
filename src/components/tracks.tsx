@@ -13,7 +13,7 @@ import useMidi, {
 } from "lib/midi";
 import usePlayback from "lib/playback";
 import { concat, withoutIndex } from "lib/state";
-import { styleVars } from "lib/utils";
+import { repeat, styleVars } from "lib/utils";
 import { useState } from "react";
 import "./tracks.css";
 
@@ -138,14 +138,59 @@ const Tracks = () => {
 							}
 					)
 					.filter(Boolean) as MidiNoteWithDuration[]
+			},
+			{
+				start: units.millisecondsPerBar * 4,
+				end: units.millisecondsPerBar * 6,
+				notes: (
+					[
+						[73, 1],
+						[71, 1],
+						[73, 2],
+						[73, 2],
+						[71, 1],
+						[73, 1],
+						[74, 2],
+						[73, 1],
+						[71, 1],
+						[73, 2],
+						[69, 2],
+						[69, 1],
+						[71, 1],
+						[73, 1],
+						[74, 1],
+						[73, 1],
+						[71, 1],
+						[69, 1],
+						[76, 1],
+						[73, 2]
+					] as [number | null, number][]
+				)
+					.map(
+						([note, duration], i, all) =>
+							note && {
+								note,
+								velocity: 127,
+								time:
+									all
+										.slice(0, i)
+										.map(([, d]) => d)
+										.reduce((x, d) => x + d, 0) *
+									(units.millisecondsPerBeat / 4),
+								duration:
+									(units.millisecondsPerBeat / 4) *
+									duration
+							}
+					)
+					.filter(Boolean) as MidiNoteWithDuration[]
 			}
 		],
 		[
 			{
 				start: units.millisecondsPerBar * 2,
-				end: units.millisecondsPerBar * 4,
+				end: units.millisecondsPerBar * 6,
 				notes: (
-					[
+					repeat(2)([
 						[45, 3],
 						[null, 1],
 						[40, 3],
@@ -162,7 +207,7 @@ const Tracks = () => {
 						[null, 1],
 						[40, 3],
 						[null, 1]
-					] as [number | null, number][]
+					]) as [number | null, number][]
 				)
 					.map(
 						([note, duration], i, all) =>
@@ -186,7 +231,7 @@ const Tracks = () => {
 	]);
 	useMidi({
 		play: note => audio.play({ note, synth: organ }),
-		stop: audio.stop
+		stop: note => audio.stop({ note, synth: organ })
 	});
 
 	const grey = `#F9F9F9`;
@@ -263,6 +308,15 @@ const Tracks = () => {
 							);
 							setPos(undefined);
 							setDragging(false);
+							if (playing) {
+								cancel();
+								playback({
+									tracks,
+									synth: organ,
+									time:
+										pos! / units.pixelsPerMillisecond
+								});
+							}
 						}}
 						style={{
 							left: `${
@@ -311,32 +365,35 @@ enum Interval {
 	Octave = 1200
 }
 
-const organ: Synthesiser = [
-	{
-		type: "sine",
-		detune: Interval.Octave * -1,
-		gain: 1
-	},
-	{
-		type: "sine",
-		detune: 0,
-		gain: 1
-	},
-	{
-		type: "sine",
-		detune: Interval.Octave,
-		gain: 0.5
-	},
-	{
-		type: "sine",
-		detune: Interval.Octave * 2,
-		gain: 0.25
-	},
-	{
-		type: "sine",
-		detune: Interval.Octave * 3,
-		gain: 0.125
-	}
-];
+const organ: Synthesiser = {
+	id: 0,
+	nodes: [
+		{
+			type: "sine",
+			detune: Interval.Octave * -1,
+			gain: 1
+		},
+		{
+			type: "sine",
+			detune: 0,
+			gain: 1
+		},
+		{
+			type: "sine",
+			detune: Interval.Octave,
+			gain: 0.5
+		},
+		{
+			type: "sine",
+			detune: Interval.Octave * 2,
+			gain: 0.25
+		},
+		{
+			type: "sine",
+			detune: Interval.Octave * 3,
+			gain: 0.125
+		}
+	]
+};
 
 export default Tracks;

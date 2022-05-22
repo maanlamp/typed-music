@@ -101,6 +101,7 @@ const usePlayback = ({
 	}) => {
 		cancel();
 		setTime(time);
+		audio.reset();
 		if (playing) playback({ tracks, synth, time });
 	};
 
