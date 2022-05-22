@@ -1,13 +1,18 @@
 {
   "files": {
     "main.css": "/typed-music/static/css/main.1659e6b0.css",
-    "main.js": "/typed-music/static/js/main.e5ce148d.js",
+    "main.js": "/typed-music/static/js/main.e46688dd.js",
     "index.html": "/typed-music/index.html",
+    "static/media/trash.svg": "/typed-music/static/media/trash.409779205bd2530d98ae892c5d153a90.svg",
+    "static/media/rewind.svg": "/typed-music/static/media/rewind.62f02bb7d55ba0143482d21a369679fa.svg",
+    "static/media/play.svg": "/typed-music/static/media/play.054ffecc3e7a88719f029a1ba2084182.svg",
+    "static/media/pause.svg": "/typed-music/static/media/pause.e5c43cc3207daf0b26de77cc8829f6df.svg",
+    "static/media/plus.svg": "/typed-music/static/media/plus.066a0d2178ca150e026d44c719c670ff.svg",
     "main.1659e6b0.css.map": "/typed-music/static/css/main.1659e6b0.css.map",
-    "main.e5ce148d.js.map": "/typed-music/static/js/main.e5ce148d.js.map"
+    "main.e46688dd.js.map": "/typed-music/static/js/main.e46688dd.js.map"
   },
   "entrypoints": [
     "static/css/main.1659e6b0.css",
-    "static/js/main.e5ce148d.js"
+    "static/js/main.e46688dd.js"
   ]
 }
