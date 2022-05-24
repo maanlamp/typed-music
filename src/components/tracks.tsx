@@ -452,22 +452,25 @@ const Tracks = () => {
 						style={
 							{
 								overflowX: "scroll",
-								background: `local repeating-linear-gradient(
-		90deg,
-		${range(signature[0])
-			.map(
-				i =>
-					`var(--grey) ${
-						i * units.pixelsPerBeat
-					}px, var(--grey) ${
-						(i + 1) * units.pixelsPerBeat - 1
-					}px, ${
-						i === signature[0] - 1
-							? "rgba(0,0,0,.4)"
-							: "var(--darker-grey)"
-					} ${(i + 1) * units.pixelsPerBeat}px`
-			)
-			.join(",")}`
+								background: `local repeating-linear-gradient(90deg,${range(
+									signature[0]
+								)
+									.map(
+										i =>
+											`var(--grey) ${
+												i * units.pixelsPerBeat
+											}px, var(--grey) ${
+												(i + 1) * units.pixelsPerBeat -
+												1
+											}px, ${
+												i === signature[0] - 1
+													? "rgba(0,0,0,.4)"
+													: "var(--darker-grey)"
+											} ${
+												(i + 1) * units.pixelsPerBeat
+											}px`
+									)
+									.join(",")}`
 							} as any
 						}
 						grow>
