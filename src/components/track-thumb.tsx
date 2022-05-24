@@ -1,9 +1,12 @@
 import { ReactComponent as CubeIcon } from "assets/icons/cube.svg";
 import { ReactComponent as HeadphonesIcon } from "assets/icons/headphones.svg";
+import { ReactComponent as LockIcon } from "assets/icons/lock.svg";
+import { ReactComponent as MutedIcon } from "assets/icons/mute.svg";
 import { ReactComponent as FilledRecordIcon } from "assets/icons/record-solid.svg";
 import { ReactComponent as RecordIcon } from "assets/icons/record.svg";
+import { ReactComponent as VolumeIcon } from "assets/icons/sound.svg";
 import { ReactComponent as TrashIcon } from "assets/icons/trash.svg";
-import { ReactComponent as VolumeIcon } from "assets/icons/volume.svg";
+import { ReactComponent as UnlockIcon } from "assets/icons/unlock.svg";
 import Button from "components/button";
 import Column from "components/column";
 import { CrossAxisAlignment } from "components/flex";
@@ -11,7 +14,7 @@ import Icon from "components/icon";
 import { Gap, Padding } from "components/layout";
 import Row from "components/row";
 import { darken } from "lib/color";
-import { styleVars } from "lib/utils";
+import { mean, styleVars } from "lib/utils";
 import { useState } from "react";
 
 type TrackThumbProps = Readonly<{
@@ -20,6 +23,7 @@ type TrackThumbProps = Readonly<{
 	mono?: boolean;
 	solo?: boolean;
 	muted?: boolean;
+	locked?: boolean;
 }>;
 
 const TrackThumb = ({
@@ -27,7 +31,8 @@ const TrackThumb = ({
 	remove,
 	mono: defaultMono,
 	solo: defaultSolo,
-	muted: defaultMuted
+	muted: defaultMuted,
+	locked: defaultLocked = true
 }: TrackThumbProps) => {
 	const [recording, setRecording] = useState(false);
 	const [volume, setVolume] = useState<
@@ -37,6 +42,7 @@ const TrackThumb = ({
 	const [solo, setSolo] = useState(defaultSolo);
 	const [mono, setMono] = useState(defaultMono);
 	const [muted, setMuted] = useState(defaultMuted);
+	const [locked, setLocked] = useState(defaultLocked);
 
 	return (
 		<Row
@@ -54,17 +60,19 @@ const TrackThumb = ({
 				</Button>
 				<Button
 					round
+					icon={HeadphonesIcon}
 					onClick={() => {
 						if (!solo) {
 							setMuted(false);
 						}
 						setSolo(!solo);
-					}}>
-					{solo ? "x" : <Icon svg={HeadphonesIcon} />}
-				</Button>
-				<Button round onClick={() => setMuted(!muted)}>
-					{muted ? "x" : <Icon svg={VolumeIcon} />}
-				</Button>
+					}}
+				/>
+				<Button
+					round
+					onClick={() => setMuted(!muted)}
+					icon={muted ? MutedIcon : VolumeIcon}
+				/>
 				<Button
 					round
 					onClick={() => {
@@ -80,36 +88,47 @@ const TrackThumb = ({
 					)}
 				</Button>
 			</Row>
-			<Column>
-				<input
-					disabled={muted}
-					defaultValue={volume[0] * 100}
-					type="range"
-					onChange={({ target: { value } }) => {
-						// audio.gain.current.gain.value =
-						// 	parseInt(value) / 100;
-						setVolume([
-							parseInt(value) / 100,
-							volume[1]
-						]);
-					}}
-				/>
-				{!mono && (
+			<Row>
+				<Column>
 					<input
 						disabled={muted}
-						defaultValue={volume[1] * 100}
+						value={volume[0] * 100}
 						type="range"
 						onChange={({ target: { value } }) => {
-							// audio.gain.current.gain.value =
-							// 	parseInt(value) / 100;
+							const parsed = parseInt(value) / 100;
 							setVolume([
-								volume[0],
-								parseInt(value) / 100
+								parsed,
+								locked ? parsed : volume[1]
 							]);
 						}}
 					/>
-				)}
-			</Column>
+					{!mono && (
+						<input
+							disabled={muted}
+							value={volume[1] * 100}
+							type="range"
+							onChange={({ target: { value } }) => {
+								const parsed = parseInt(value) / 100;
+								setVolume([
+									locked ? parsed : volume[0],
+									parsed
+								]);
+							}}
+						/>
+					)}
+				</Column>
+				<Button
+					round
+					onClick={() => {
+						if (!locked) {
+							const avg = mean(volume);
+							setVolume([avg, avg]);
+						}
+						setLocked(!locked);
+					}}
+					icon={locked ? LockIcon : UnlockIcon}
+				/>
+			</Row>
 			<input
 				defaultValue={pan * 100}
 				type="range"

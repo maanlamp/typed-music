@@ -54,3 +54,7 @@ export type Falsy<T> =
 	| undefined
 	| false
 	| 0n;
+
+export const mean = (
+	xs: readonly number[] | number[]
+) => xs.reduce((a, b) => a + b, 0) / xs.length;

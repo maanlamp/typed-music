@@ -5,7 +5,7 @@ import { ReactComponent as PlusIcon } from "assets/icons/plus.svg";
 import { ReactComponent as FilledRecordIcon } from "assets/icons/record-solid.svg";
 import { ReactComponent as RecordIcon } from "assets/icons/record.svg";
 import { ReactComponent as RewindIcon } from "assets/icons/rewind.svg";
-import { ReactComponent as VolumeIcon } from "assets/icons/volume.svg";
+import { ReactComponent as VolumeIcon } from "assets/icons/sound.svg";
 import Button from "components/button";
 import Column from "components/column";
 import {
@@ -388,6 +388,7 @@ const Tracks = () => {
 						</Button>
 					</Column>
 					<Column
+						classes="recordings"
 						style={{ overflowX: "scroll" } as any}
 						grow>
 						<Row
