@@ -43,12 +43,21 @@
 }
 
 .recordings {
+	/* TODO: hook into time signature */
 	background: repeating-linear-gradient(
 		90deg,
-		var(--grey),
-		var(--grey) calc(var(--pixels-per-bar) - 1px),
+		var(--grey) 0,
+		var(--grey) calc(var(--pixels-per-bar)),
 		var(--darker-grey) var(--pixels-per-bar),
-		var(--grey) var(--pixels-per-bar)
+		var(--grey) calc(var(--pixels-per-bar) + 1px),
+		var(--grey) calc(var(--pixels-per-bar) * 2 - 1px),
+		var(--darker-grey) calc(var(--pixels-per-bar) * 2),
+		var(--grey) calc(var(--pixels-per-bar) + 1px),
+		var(--grey) calc(var(--pixels-per-bar) * 3 - 1px),
+		var(--darker-grey) calc(var(--pixels-per-bar) * 3),
+		var(--grey) calc(var(--pixels-per-bar) + 1px),
+		var(--grey) calc(var(--pixels-per-bar) * 4 - 1px),
+		black calc(var(--pixels-per-bar) * 4)
 	);
 	background-attachment: local;
 }

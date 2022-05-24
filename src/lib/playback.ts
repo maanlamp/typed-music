@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 type UsePlaybackParams = Readonly<{
 	bpm: number;
-	signature: [number, number];
+	signature: readonly [number, number];
 	audio: ReturnType<typeof useAudio>;
 }>;
 

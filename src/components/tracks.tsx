@@ -39,6 +39,10 @@ const colors = [
 ];
 
 const Tracks = () => {
+	const [signature, setSignature] = useState<
+		readonly [number, number]
+	>([4, 4]);
+	const [bpm, setBpm] = useState(100);
 	const [volume, setVolume] = useState(0.05);
 	const audio = useAudio({ volume });
 	const {
@@ -51,8 +55,8 @@ const Tracks = () => {
 		cancel,
 		setTime
 	} = usePlayback({
-		bpm: 100,
-		signature: [4, 4],
+		bpm,
+		signature,
 		audio
 	});
 
@@ -296,52 +300,108 @@ const Tracks = () => {
 					/>
 					<span>{volume}</span>
 				</Row>
-				<div>
-					<Button
-						round
-						onClick={() =>
-							reset({
-								tracks,
-								synth: organ
-							})
+				<Row gap={Gap.Medium}>
+					<Row
+						gap={Gap.Tiny}
+						crossAxisAlignment={
+							CrossAxisAlignment.Center
 						}>
-						<Icon svg={RewindIcon} />
-					</Button>
-					<Button
-						round
-						onClick={() => {
-							if (!playing) {
-								playback({
-									tracks,
-									synth: organ,
-									time
-								});
-							} else {
-								cancel();
+						<input
+							type="number"
+							value={signature[0]}
+							onChange={({ target: { value } }) =>
+								setSignature([
+									parseInt(value),
+									signature[1]
+								])
 							}
-							setPlaying(!playing);
-						}}>
-						{playing ? (
-							<Icon svg={PauseIcon} />
-						) : (
-							<Icon svg={PlayIcon} />
-						)}
-					</Button>
-					<Button
-						round
-						onClick={() => {
-							setRecording(!recording);
-						}}>
-						{recording ? (
-							<Icon
-								svg={FilledRecordIcon}
-								color={darken("#ffffff", 0.4)}
-							/>
-						) : (
-							<Icon svg={RecordIcon} />
-						)}
-					</Button>
-				</div>
+							style={{
+								width: `${
+									signature[0].toString().length + 3
+								}ch`
+							}}
+						/>
+						<span>/</span>
+						<input
+							type="number"
+							value={signature[1]}
+							onChange={({ target: { value } }) =>
+								setSignature([
+									signature[0],
+									parseInt(value)
+								])
+							}
+							style={{
+								width: `${
+									signature[1].toString().length + 3
+								}ch`
+							}}
+						/>
+					</Row>
+					<Row gap={Gap.Tiny}>
+						<Button
+							round
+							onClick={() =>
+								reset({
+									tracks,
+									synth: organ
+								})
+							}>
+							<Icon svg={RewindIcon} />
+						</Button>
+						<Button
+							round
+							onClick={() => {
+								if (!playing) {
+									playback({
+										tracks,
+										synth: organ,
+										time
+									});
+								} else {
+									cancel();
+								}
+								setPlaying(!playing);
+							}}>
+							{playing ? (
+								<Icon svg={PauseIcon} />
+							) : (
+								<Icon svg={PlayIcon} />
+							)}
+						</Button>
+						<Button
+							round
+							onClick={() => {
+								setRecording(!recording);
+							}}>
+							{recording ? (
+								<Icon
+									svg={FilledRecordIcon}
+									color={darken("#ffffff", 0.4)}
+								/>
+							) : (
+								<Icon svg={RecordIcon} />
+							)}
+						</Button>
+					</Row>
+					<Row
+						gap={Gap.Tiny}
+						crossAxisAlignment={
+							CrossAxisAlignment.Center
+						}>
+						<input
+							type="number"
+							value={bpm}
+							style={{
+								width: `${bpm.toString().length + 3}ch`
+							}}
+							onChange={({ target: { value } }) =>
+								setBpm(parseInt(value))
+							}
+						/>
+						<span>BPM</span>
+					</Row>
+				</Row>
 				<Button round icon={MenuIcon} />
 			</Row>
 			<Row grow>
