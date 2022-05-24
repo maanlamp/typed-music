@@ -26,7 +26,7 @@ import useMidi, {
 } from "lib/midi";
 import usePlayback from "lib/playback";
 import { concat, withoutIndex } from "lib/state";
-import { repeat, styleVars } from "lib/utils";
+import { range, repeat, styleVars } from "lib/utils";
 import { useState } from "react";
 import "./tracks.css";
 
@@ -449,7 +449,27 @@ const Tracks = () => {
 					</Column>
 					<Column
 						classes="recordings"
-						style={{ overflowX: "scroll" } as any}
+						style={
+							{
+								overflowX: "scroll",
+								background: `repeating-linear-gradient(
+		90deg,
+		${range(signature[0])
+			.map(
+				i =>
+					`var(--grey) ${
+						i * units.pixelsPerBeat
+					}px, var(--grey) ${
+						(i + 1) * units.pixelsPerBeat - 1
+					}px, ${
+						i === signature[0] - 1
+							? "rgba(0,0,0,.4)"
+							: "var(--darker-grey)"
+					} ${(i + 1) * units.pixelsPerBeat}px`
+			)
+			.join(",")}`
+							} as any
+						}
 						grow>
 						<Row
 							classes="timeline"
