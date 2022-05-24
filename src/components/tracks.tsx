@@ -452,7 +452,7 @@ const Tracks = () => {
 						style={
 							{
 								overflowX: "scroll",
-								background: `repeating-linear-gradient(
+								background: `local repeating-linear-gradient(
 		90deg,
 		${range(signature[0])
 			.map(
