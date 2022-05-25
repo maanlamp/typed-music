@@ -59,7 +59,17 @@ export const lighten = (
 	color: string,
 	amount: number
 ) => {
-	const [h, s, l] = hexToHsl(color);
+	const [h, s, l] = color.startsWith("#")
+		? hexToHsl(color)
+		: rgbToHsl(
+				ensureRgb(color)
+					.slice("rgb(".length, -")".length)
+					.split(",") as any as readonly [
+					number,
+					number,
+					number
+				]
+		  );
 	return `hsl(${h}, ${s}%, ${l * (1 + amount)}%)`;
 };
 
@@ -67,7 +77,17 @@ export const darken = (
 	color: string,
 	amount: number
 ) => {
-	const [h, s, l] = hexToHsl(color);
+	const [h, s, l] = color.startsWith("#")
+		? hexToHsl(color)
+		: rgbToHsl(
+				ensureRgb(color)
+					.slice("rgb(".length, -")".length)
+					.split(",") as any as readonly [
+					number,
+					number,
+					number
+				]
+		  );
 	return `hsl(${h}, ${s}%, ${l * (1 - amount)}%)`;
 };
 
@@ -79,19 +99,28 @@ export const withOpacity = (
 		return (
 			col + Math.round(opacity * 255).toString(16)
 		);
-	} else if (col.startsWith("rgb")) {
-		const [r, g, b] = col
-			.slice("rgb(".length, -")".length)
-			.split(",");
-		return `rgba(${r},${g},${b}, ${opacity})`;
 	} else if (col.startsWith("hsl")) {
 		const [h, s, l] = col
 			.slice("hsl(".length, -")".length)
 			.split(",");
 		return `hsla(${h},${s},${l}, ${opacity})`;
 	} else {
-		throw new TypeError(
-			`Expected an opaque color string (rgb, hex, hsl), but got "${col}".`
-		);
+		if (!col.startsWith("rgb")) {
+			col = ensureRgb(col);
+		}
+		const [r, g, b] = col
+			.slice("rgb(".length, -")".length)
+			.split(",");
+		return `rgba(${r},${g},${b}, ${opacity})`;
 	}
+};
+
+const ensureRgb = (color: string): string => {
+	const div = document.createElement("span");
+	div.style.color = color;
+	div.style.display = "none";
+	document.body.append(div);
+	const col = getComputedStyle(div).color;
+	div.remove();
+	return col;
 };

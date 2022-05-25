@@ -19,14 +19,12 @@ import Track, {
 	type Track as TrackType
 } from "components/track";
 import TrackThumb from "components/track-thumb";
-import useAudio, { Synthesiser } from "lib/audio";
+import useAppState from "index";
+import useAudio from "lib/audio";
 import { darken } from "lib/color";
-import useMidi, {
-	MidiNoteWithDuration
-} from "lib/midi";
 import usePlayback from "lib/playback";
-import { concat, withoutIndex } from "lib/state";
-import { range, repeat, styleVars } from "lib/utils";
+import { omit } from "lib/state";
+import { range, styleVars } from "lib/utils";
 import { useState } from "react";
 import "./tracks.css";
 
@@ -38,237 +36,35 @@ const colors = [
 	"#FF9447"
 ];
 
-const Tracks = () => {
-	const [signature, setSignature] = useState<
-		readonly [number, number]
-	>([4, 4]);
-	const [bpm, setBpm] = useState(100);
-	const [volume, setVolume] = useState(0.05);
-	const audio = useAudio({ volume });
-	const {
-		playback,
-		units,
-		time,
-		playing,
-		setPlaying,
-		reset,
-		cancel,
-		setTime
-	} = usePlayback({
-		bpm,
-		signature,
-		audio
-	});
+type TracksProps = Readonly<{
+	audio: ReturnType<typeof useAudio>;
+}>;
 
-	// TODO: Move recording/solo/mono/track state into global state
-	// Maybe start using reducers?
-	const [tracks, setTracks] = useState<TrackType[]>([
+const Tracks = ({ audio }: TracksProps) => {
+	const [
 		{
-			recordings: [
-				{
-					start: 0,
-					end: units.millisecondsPerBar * 2,
-					notes: (
-						[
-							[81, 2],
-							[76, 1],
-							[74, 1],
-							[73, 2],
-							[null, 1],
-							[73, 1],
-							[73, 1],
-							[74, 1],
-							[76, 1],
-							[78, 1],
-							[74, 2],
-							[null, 2],
-							[78, 1],
-							[76, 1],
-							[74, 1],
-							[73, 1],
-							[71, 1],
-							[73, 1],
-							[74, 1],
-							[78, 1],
-							[76, 1],
-							[74, 1],
-							[73, 1],
-							[71, 1],
-							[69, 2]
-						] as [null | number, number][]
-					)
-						.map(
-							([note, duration], i, all) =>
-								note && {
-									note,
-									velocity: 127,
-									time:
-										all
-											.slice(0, i)
-											.map(([, d]) => d)
-											.reduce((x, d) => x + d, 0) *
-										(units.millisecondsPerBeat / 4),
-									duration:
-										(units.millisecondsPerBeat / 4) *
-										duration
-								}
-						)
-						.filter(Boolean) as MidiNoteWithDuration[]
-				},
-				{
-					start: units.millisecondsPerBar * 2,
-					end: units.millisecondsPerBar * 4,
-					notes: (
-						[
-							[73, 1],
-							[71, 1],
-							[73, 2],
-							[73, 2],
-							[71, 1],
-							[73, 1],
-							[74, 2],
-							[73, 1],
-							[71, 1],
-							[73, 2],
-							[69, 2],
-							[69, 1],
-							[71, 1],
-							[73, 1],
-							[74, 1],
-							[73, 1],
-							[71, 1],
-							[69, 1],
-							[76, 1],
-							[73, 2]
-						] as [number | null, number][]
-					)
-						.map(
-							([note, duration], i, all) =>
-								note && {
-									note,
-									velocity: 127,
-									time:
-										all
-											.slice(0, i)
-											.map(([, d]) => d)
-											.reduce((x, d) => x + d, 0) *
-										(units.millisecondsPerBeat / 4),
-									duration:
-										(units.millisecondsPerBeat / 4) *
-										duration
-								}
-						)
-						.filter(Boolean) as MidiNoteWithDuration[]
-				},
-				{
-					start: units.millisecondsPerBar * 4,
-					end: units.millisecondsPerBar * 6,
-					notes: (
-						[
-							[73, 1],
-							[71, 1],
-							[73, 2],
-							[73, 2],
-							[71, 1],
-							[73, 1],
-							[74, 2],
-							[73, 1],
-							[71, 1],
-							[73, 2],
-							[69, 2],
-							[69, 1],
-							[71, 1],
-							[73, 1],
-							[74, 1],
-							[73, 1],
-							[71, 1],
-							[69, 1],
-							[76, 1],
-							[73, 2]
-						] as [number | null, number][]
-					)
-						.map(
-							([note, duration], i, all) =>
-								note && {
-									note,
-									velocity: 127,
-									time:
-										all
-											.slice(0, i)
-											.map(([, d]) => d)
-											.reduce((x, d) => x + d, 0) *
-										(units.millisecondsPerBeat / 4),
-									duration:
-										(units.millisecondsPerBeat / 4) *
-										duration
-								}
-						)
-						.filter(Boolean) as MidiNoteWithDuration[]
-				}
-			]
+			tracks,
+			bpm,
+			volume,
+			signature,
+			playing,
+			recording,
+			instruments,
+			time,
+			units
 		},
-		{
-			recordings: [
-				{
-					start: units.millisecondsPerBar * 2,
-					end: units.millisecondsPerBar * 6,
-					notes: (
-						repeat(2)([
-							[45, 3],
-							[null, 1],
-							[40, 3],
-							[null, 1],
-							[45, 3],
-							[null, 1],
-							[40, 3],
-							[null, 1],
-							[45, 3],
-							[null, 1],
-							[40, 3],
-							[null, 1],
-							[45, 3],
-							[null, 1],
-							[40, 3],
-							[null, 1]
-						]) as [number | null, number][]
-					)
-						.map(
-							([note, duration], i, all) =>
-								note && {
-									note,
-									velocity: 127,
-									time:
-										all
-											.slice(0, i)
-											.map(([, d]) => d)
-											.reduce((x, d) => x + d, 0) *
-										(units.millisecondsPerBeat / 4),
-									duration:
-										(units.millisecondsPerBeat / 4) *
-										duration
-								}
-						)
-						.filter(Boolean) as MidiNoteWithDuration[]
-				}
-			]
-		}
-	]);
-	useMidi({
-		play: note =>
-			audio.play({ note, synth: organ, bpm }),
-		stop: note => audio.stop({ note, synth: organ })
-	});
-
-	const grey = `#F9F9F9`;
-	const darkerGrey = darken(grey, 0.2);
-
+		update
+	] = useAppState();
+	const playback = usePlayback(audio);
 	const [pos, setPos] = useState<number>();
 	const [dragging, setDragging] = useState(false);
-	const [recording, setRecording] = useState(false);
+
 	const leftOffset =
 		document
 			.querySelector(".timeline")
 			?.getBoundingClientRect().left ?? 0;
+	const grey = `#F9F9F9`;
+	const darkerGrey = darken(grey, 0.2);
 
 	return (
 		<Column
@@ -296,7 +92,10 @@ const Tracks = () => {
 						onChange={({ target: { value } }) => {
 							audio.gain.current.gain.value =
 								parseInt(value) / 100;
-							setVolume(audio.gain.current.gain.value);
+							update(
+								"volume",
+								audio.gain.current.gain.value
+							);
 						}}
 					/>
 					<span>{volume}</span>
@@ -308,10 +107,11 @@ const Tracks = () => {
 							CrossAxisAlignment.Center
 						}>
 						<input
+							disabled={playing}
 							type="number"
 							value={signature[0]}
 							onChange={({ target: { value } }) =>
-								setSignature([
+								update("signature", [
 									parseInt(value),
 									signature[1]
 								])
@@ -324,10 +124,11 @@ const Tracks = () => {
 						/>
 						<span>/</span>
 						<input
+							disabled={playing}
 							type="number"
 							value={signature[1]}
 							onChange={({ target: { value } }) =>
-								setSignature([
+								update("signature", [
 									signature[0],
 									parseInt(value)
 								])
@@ -343,10 +144,7 @@ const Tracks = () => {
 						<Button
 							round
 							onClick={() =>
-								reset({
-									tracks,
-									synth: organ
-								})
+								playback.reset(instruments[0])
 							}>
 							<Icon svg={RewindIcon} />
 						</Button>
@@ -354,15 +152,11 @@ const Tracks = () => {
 							round
 							onClick={() => {
 								if (!playing) {
-									playback({
-										tracks,
-										synth: organ,
-										time
-									});
+									playback.start(instruments[0]);
 								} else {
-									cancel();
+									playback.stop();
 								}
-								setPlaying(!playing);
+								update("playing", !playing);
 							}}>
 							{playing ? (
 								<Icon svg={PauseIcon} />
@@ -372,9 +166,9 @@ const Tracks = () => {
 						</Button>
 						<Button
 							round
-							onClick={() => {
-								setRecording(!recording);
-							}}>
+							onClick={() =>
+								update("recording", !recording)
+							}>
 							{recording ? (
 								<Icon
 									svg={FilledRecordIcon}
@@ -391,13 +185,14 @@ const Tracks = () => {
 							CrossAxisAlignment.Center
 						}>
 						<input
+							disabled={playing}
 							type="number"
 							value={bpm}
 							style={{
 								width: `${bpm.toString().length + 3}ch`
 							}}
 							onChange={({ target: { value } }) =>
-								setBpm(parseInt(value))
+								update("bpm", parseInt(value))
 							}
 						/>
 						<span>BPM</span>
@@ -418,37 +213,57 @@ const Tracks = () => {
 				<Row classes="tracks" grow>
 					<Column>
 						<div className="tracks-spacer" />
-						{tracks.map((track, i) => (
+						{Object.values(tracks).map((track, i) => (
 							<TrackThumb
-								key={i}
+								key={track.id}
 								color={
 									colors[i % colors.length] ??
 									colors[0]
 								}
 								remove={() =>
-									setTracks(withoutIndex(i))
+									update("tracks", omit(track.id))
 								}
-								mono={track.mono}
-								muted={track.muted}
-								solo={track.solo}
+								track={track}
 							/>
 						))}
 						<Button
 							color={
 								colors[
-									tracks.length % colors.length
+									Object.keys(tracks).length %
+										colors.length
 								] ?? colors[0]
 							}
 							onClick={() =>
-								setTracks(
-									concat<TrackType>({ recordings: [] })
-								)
+								update<
+									Record<TrackType["id"], TrackType>
+								>("tracks", tracks => {
+									const id =
+										Object.values(
+											tracks
+										).length.toString();
+									return {
+										...tracks,
+										[id]: {
+											id,
+											muted: false,
+											mono: false,
+											locked: true,
+											pan: 0.5,
+											isRecording: false,
+											volume: [1, 1],
+											recordings: [],
+											solo: false
+										} as TrackType
+									};
+								})
 							}
 							icon={PlusIcon}>
 							<span>Add track</span>
 						</Button>
 					</Column>
 					<Column
+						// TODO: For some reason units.pixelsPerBeat
+						// isn't linked properly to bpm?
 						classes="recordings"
 						style={
 							{
@@ -459,16 +274,22 @@ const Tracks = () => {
 									.map(
 										i =>
 											`var(--grey) ${
-												i * units.pixelsPerBeat
+												i *
+												(units.pixelsPerBeat *
+													(100 / bpm))
 											}px, var(--grey) ${
-												(i + 1) * units.pixelsPerBeat -
+												(i + 1) *
+													(units.pixelsPerBeat *
+														(100 / bpm)) -
 												1
 											}px, ${
 												i === signature[0] - 1
 													? "rgba(0,0,0,.4)"
 													: "var(--darker-grey)"
 											} ${
-												(i + 1) * units.pixelsPerBeat
+												(i + 1) *
+												(units.pixelsPerBeat *
+													(100 / bpm))
 											}px`
 									)
 									.join(",")}`
@@ -492,16 +313,12 @@ const Tracks = () => {
 							onMouseUp={() => {
 								const time =
 									pos! / units.pixelsPerMillisecond;
-								setTime(time);
+								update("time", time);
 								setPos(undefined);
 								setDragging(false);
 								if (playing) {
-									cancel();
-									playback({
-										tracks,
-										synth: organ,
-										time
-									});
+									playback.stop();
+									playback.start(instruments[0]);
 								}
 							}}>
 							<div
@@ -520,20 +337,20 @@ const Tracks = () => {
 										pos ??
 										time * units.pixelsPerMillisecond
 									}px`,
-									height: `calc(16px + ${tracks.length} * 4rem)`
+									height: `calc(16px + ${
+										Object.values(tracks).length
+									} * 4rem)`
 								}}
 							/>
 						</Row>
-						{tracks?.map((track, i) => (
+						{Object.values(tracks).map((track, i) => (
 							<Track
 								key={i}
 								track={track}
-								units={units}
 								color={
 									colors[i % colors.length] ??
 									colors[0]
 								}
-								bpm={bpm}
 							/>
 						))}
 					</Column>
@@ -551,45 +368,5 @@ const Tracks = () => {
 		</Column>
 	);
 };
-
-enum Interval {
-	Cent = 1,
-	Semitone = 100,
-	Tone = 200,
-	Octave = 1200
-}
-
-const organ: Synthesiser = {
-	id: 0,
-	nodes: [
-		{
-			type: "sine",
-			detune: Interval.Octave * -1,
-			gain: 1
-		},
-		{
-			type: "sine",
-			detune: 0,
-			gain: 1
-		},
-		{
-			type: "sine",
-			detune: Interval.Octave,
-			gain: 0.5
-		},
-		{
-			type: "sine",
-			detune: Interval.Octave * 2,
-			gain: 0.25
-		},
-		{
-			type: "sine",
-			detune: Interval.Octave * 3,
-			gain: 0.125
-		}
-	]
-};
-
-const instruments: Synthesiser[] = [organ];
 
 export default Tracks;

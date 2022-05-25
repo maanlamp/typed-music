@@ -24,22 +24,42 @@ export const withoutIndex =
 		return clone;
 	};
 
-export const merge =
-	<T extends object>(
-		update:
-			| Partial<T>
-			| ((update: Partial<T>) => Partial<T>)
-	) =>
-	(source: T) => ({
-		...source,
-		...(typeof update === "function"
-			? update(source)
-			: update)
-	});
-
 export const omit =
 	<T extends object>(key: keyof T) =>
 	(target: T) => {
 		const { [key]: _, ...rest } = target;
 		return rest;
+	};
+
+export const set =
+	<V>(chain: string, value: V | ((old: V) => V)) =>
+	<T>(target: T) => {
+		const keys = (chain as string).split(".");
+
+		if (keys.length === 1) {
+			return {
+				...target,
+				[keys[0]]:
+					typeof value === "function"
+						? (value as Function)(
+								(target as any)[keys[0]]
+						  )
+						: value
+			};
+		}
+
+		const clone = structuredClone(target);
+		const endpoint = keys
+			.slice(0, -1)
+			.reduce(
+				(clone, key) => clone[key],
+				clone as any
+			);
+		endpoint[keys[keys.length - 1]] =
+			typeof value === "function"
+				? (value as Function)(
+						endpoint[keys[keys.length - 1]]
+				  )
+				: value;
+		return clone;
 	};

@@ -4,7 +4,6 @@ import {
 	midiNoteToFrequency,
 	MidiNoteWithDuration
 } from "lib/midi";
-import { merge } from "lib/state";
 import { useEffect, useRef } from "react";
 
 type AudioNode = Readonly<{
@@ -57,34 +56,37 @@ const useAudio = (props?: UseAudioParams) => {
 		gain.current.gain.value = props?.volume ?? 0;
 	}, [props?.volume]);
 
+	// TODO: Separate playing a note and a recording,
+	// as recordings need to know the bpm while normal
+	// notes don't.
 	const play = ({
 		note,
-		synth,
-		bpm,
+		instrument,
+		bpm = 100,
 		afterMs = 0
 	}: {
 		note: MidiNote | MidiNoteWithDuration;
-		synth: Synthesiser;
-		bpm: number;
+		instrument: Synthesiser;
+		bpm?: number;
 		afterMs?: number;
 	}) => {
 		// TODO: Find a way to create less objects and reuse oscillators
 		// Probably stop using oscillator.start/stop and manipulate its gain instead.
-		for (const synthNode of synth.nodes) {
+		for (const node of instrument.nodes) {
 			const oscillator =
 				AUDIO_CONTEXT.createOscillator();
-			oscillator.type = synthNode.type;
+			oscillator.type = node.type;
 			const frequency = midiNoteToFrequency(note);
 			oscillator.frequency.value = frequency;
 			const detune =
-				typeof synthNode.detune === "function"
-					? synthNode.detune(note)
-					: synthNode.detune ?? 0;
+				typeof node.detune === "function"
+					? node.detune(note)
+					: node.detune ?? 0;
 			oscillator.detune.value = detune;
 			const _gain =
-				typeof synthNode.gain === "function"
-					? synthNode.gain(note)
-					: synthNode.gain ?? 1;
+				typeof node.gain === "function"
+					? node.gain(note)
+					: node.gain ?? 1;
 			const volume = (note.velocity / 127) * _gain;
 			const gainNode = AUDIO_CONTEXT.createGain();
 			gainNode.gain.value = 0;
@@ -94,21 +96,20 @@ const useAudio = (props?: UseAudioParams) => {
 			);
 			oscillator.connect(gainNode);
 			gainNode.connect(gain.current);
-			nodes.current = merge<
-				Record<
-					MidiNote["note"],
-					Record<Synthesiser["id"], AudioNode[]>
-				>
-			>({
+			nodes.current = {
+				...nodes.current,
 				[note.note]: {
-					[synth.id]: (
-						nodes.current[note.note]?.[synth.id] ?? []
+					...nodes.current[note.note],
+					[instrument.id]: (
+						nodes.current[note.note]?.[
+							instrument.id
+						] ?? []
 					).concat({
 						oscillator,
 						gain: gainNode
 					})
 				}
-			})(nodes.current);
+			};
 
 			oscillator.start(
 				AUDIO_CONTEXT.currentTime +
@@ -118,7 +119,7 @@ const useAudio = (props?: UseAudioParams) => {
 			if (isMidiNoteWithDuration(note)) {
 				stop({
 					note: note.note,
-					synth: synth,
+					synth: instrument,
 					afterMs:
 						(afterMs + note.duration) * (100 / bpm)
 				});
@@ -145,14 +146,10 @@ const useAudio = (props?: UseAudioParams) => {
 		);
 	};
 
-	console.log(nodes.current);
-
 	const reset = () => {
 		stop();
 		nodes.current = {};
 	};
-
-	console.log(nodes.current);
 
 	return { play, stop, gain, reset };
 };

@@ -1,20 +1,14 @@
+import useAppState from "index";
 import { darken } from "lib/color";
 import { MidiNoteWithDuration } from "lib/midi";
-import usePlayback from "lib/playback";
 
 type NoteProps = Readonly<{
 	note: MidiNoteWithDuration;
 	color: string;
-	units: ReturnType<typeof usePlayback>["units"];
-	bpm: number;
 }>;
 
-const Note = ({
-	note,
-	color,
-	units,
-	bpm
-}: NoteProps) => {
+const Note = ({ note, color }: NoteProps) => {
+	const [{ units, bpm }] = useAppState();
 	const x =
 		(note.time / units.millisecondsPerBeat) *
 		units.pixelsPerBeat;

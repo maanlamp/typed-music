@@ -1,51 +1,15 @@
-import { type Track as TrackType } from "components/track";
+import useAppState from "index";
 import useAudio, { Synthesiser } from "lib/audio";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-type UsePlaybackParams = Readonly<{
-	bpm: number;
-	signature: readonly [number, number];
-	audio: ReturnType<typeof useAudio>;
-}>;
+const usePlayback = (
+	audio: ReturnType<typeof useAudio>
+) => {
+	const [{ time, tracks, playing, bpm }, set] =
+		useAppState();
 
-const usePlayback = ({
-	bpm,
-	signature,
-	audio
-}: UsePlaybackParams) => {
-	const [time, setTime] = useState(0);
-	const [playing, setPlaying] = useState(false);
-
-	const beatsPerSecond = bpm / 60;
-	const beatsPerBar = signature[0];
-	const pixelsPerBeat = 32 * (100 / bpm);
-	const beatsPerMillisecond = beatsPerSecond / 1000;
-	const millisecondsPerBeat = 1000 / beatsPerSecond;
-	const units = {
-		pixelsPerBeat,
-		beatsPerBar,
-		wholeNotesPerBeat: signature[1],
-		beatsPerSecond,
-		beatsPerMillisecond,
-		pixelsPerBar: pixelsPerBeat * beatsPerBar,
-		pixelsPerSecond: pixelsPerBeat * beatsPerSecond,
-		pixelsPerMillisecond:
-			pixelsPerBeat * beatsPerMillisecond,
-		millisecondsPerBeat,
-		millisecondsPerBar:
-			millisecondsPerBeat * beatsPerBar
-	};
-
-	const playback = ({
-		tracks,
-		synth,
-		time = 0
-	}: {
-		tracks: TrackType[];
-		synth: Synthesiser;
-		time?: number;
-	}) => {
-		for (const track of tracks) {
+	const start = (synth: Synthesiser) => {
+		for (const track of Object.values(tracks)) {
 			for (const recording of track.recordings) {
 				for (const note of recording.notes) {
 					const afterMs =
@@ -54,7 +18,7 @@ const usePlayback = ({
 
 					audio.play({
 						note,
-						synth,
+						instrument: synth,
 						bpm,
 						afterMs
 					});
@@ -63,7 +27,7 @@ const usePlayback = ({
 		}
 	};
 
-	const cancel = () => {
+	const stop = () => {
 		audio.stop();
 	};
 
@@ -75,7 +39,8 @@ const usePlayback = ({
 			requestedFrame = requestAnimationFrame(
 				currentTime => {
 					if (!rep) return;
-					setTime(
+					set<typeof time>(
+						"time",
 						time => time + (currentTime - start)
 					);
 					update(currentTime);
@@ -91,30 +56,17 @@ const usePlayback = ({
 		};
 	}, [playing]);
 
-	const reset = ({
-		tracks,
-		synth,
-		time = 0
-	}: {
-		tracks: TrackType[];
-		synth: Synthesiser;
-		time?: number;
-	}) => {
-		cancel();
-		setTime(time);
+	const reset = (synth: Synthesiser) => {
+		stop();
+		set("time", 0);
 		audio.reset();
-		if (playing) playback({ tracks, synth, time });
+		if (playing) start(synth);
 	};
 
 	return {
-		units,
-		playback,
-		time,
-		playing,
+		start,
 		reset,
-		setPlaying,
-		cancel,
-		setTime
+		stop
 	};
 };
 
