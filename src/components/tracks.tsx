@@ -254,7 +254,8 @@ const Tracks = () => {
 		}
 	]);
 	useMidi({
-		play: note => audio.play({ note, synth: organ }),
+		play: note =>
+			audio.play({ note, synth: organ, bpm }),
 		stop: note => audio.stop({ note, synth: organ })
 	});
 
@@ -532,6 +533,7 @@ const Tracks = () => {
 									colors[i % colors.length] ??
 									colors[0]
 								}
+								bpm={bpm}
 							/>
 						))}
 					</Column>

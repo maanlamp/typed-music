@@ -60,10 +60,12 @@ const useAudio = (props?: UseAudioParams) => {
 	const play = ({
 		note,
 		synth,
+		bpm,
 		afterMs = 0
 	}: {
 		note: MidiNote | MidiNoteWithDuration;
 		synth: Synthesiser;
+		bpm: number;
 		afterMs?: number;
 	}) => {
 		// TODO: Find a way to create less objects and reuse oscillators
@@ -109,14 +111,16 @@ const useAudio = (props?: UseAudioParams) => {
 			})(nodes.current);
 
 			oscillator.start(
-				AUDIO_CONTEXT.currentTime + afterMs / 1000
+				AUDIO_CONTEXT.currentTime +
+					(afterMs / 1000) * (100 / bpm)
 			);
 
 			if (isMidiNoteWithDuration(note)) {
 				stop({
 					note: note.note,
 					synth: synth,
-					afterMs: afterMs + note.duration
+					afterMs:
+						(afterMs + note.duration) * (100 / bpm)
 				});
 			}
 		}

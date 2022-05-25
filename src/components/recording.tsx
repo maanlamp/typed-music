@@ -17,21 +17,28 @@ type RecordingProps = Readonly<{
 	recording: Recording;
 	color: string;
 	units: ReturnType<typeof usePlayback>["units"];
+	bpm: number;
 }>;
 
 const Recording = ({
 	recording,
 	color,
-	units
+	units,
+	bpm
 }: RecordingProps) => {
 	const background = withOpacity(color, 0.75);
 	const border = darken(color, 0.05);
 	const duration = recording.end - recording.start;
 	const width = `${
-		duration * units.pixelsPerMillisecond
+		duration *
+		units.beatsPerMillisecond *
+		units.pixelsPerBeat *
+		(100 / bpm)
 	}px`;
 	const left = `${
-		recording.start * units.pixelsPerMillisecond
+		recording.start *
+		units.pixelsPerMillisecond *
+		(100 / bpm)
 	}px`;
 
 	const [selected, setSelected] = useState(false);
@@ -66,6 +73,7 @@ const Recording = ({
 					note={note}
 					color={color}
 					units={units}
+					bpm={bpm}
 				/>
 			))}
 		</div>

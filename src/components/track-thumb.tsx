@@ -130,11 +130,10 @@ const TrackThumb = ({
 				/>
 			</Row>
 			<input
+				disabled={muted}
 				defaultValue={pan * 100}
 				type="range"
 				onChange={({ target: { value } }) => {
-					// audio.gain.current.gain.value =
-					// 	parseInt(value) / 100;
 					setPan(parseInt(value) / 100);
 				}}
 			/>

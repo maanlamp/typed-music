@@ -17,12 +17,14 @@ type TrackProps = Readonly<{
 	track: Track;
 	color: string;
 	units: ReturnType<typeof usePlayback>["units"];
+	bpm: number;
 }>;
 
 const Track = ({
 	track,
 	color,
-	units
+	units,
+	bpm
 }: TrackProps) => (
 	<Row
 		classes="track-container"
@@ -38,6 +40,7 @@ const Track = ({
 						track.solo || !track.muted ? color : "grey"
 					}
 					units={units}
+					bpm={bpm}
 				/>
 			))}
 		</div>
