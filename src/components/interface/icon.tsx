@@ -1,3 +1,5 @@
+import { Color, stringify } from "lib/color";
+
 export type IconProps = Readonly<{
 	svg: React.FunctionComponent<
 		React.SVGProps<SVGSVGElement> & {
@@ -5,8 +7,13 @@ export type IconProps = Readonly<{
 		}
 	>;
 	size?: number;
-	color?: string;
+	color?: Color;
 }>;
+
+export const isPlainSVGIcon = (
+	icon: IconProps | IconProps["svg"]
+): icon is IconProps["svg"] =>
+	!(icon as IconProps).svg;
 
 const Icon = ({
 	svg: Svg,
@@ -17,7 +24,7 @@ const Icon = ({
 		className="icon"
 		width={size}
 		height={size}
-		fill={color}
+		fill={color && stringify(color)}
 	/>
 );
 

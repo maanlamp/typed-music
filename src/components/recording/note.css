@@ -1,0 +1,6 @@
+.note {
+	position: absolute;
+	height: 2px;
+	border-radius: 2px;
+	background: var(--track-color-dark);
+}

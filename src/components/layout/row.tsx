@@ -1,7 +1,7 @@
 import Flex, {
 	FlexDirection,
 	FlexProps
-} from "components/flex";
+} from "components/layout/flex";
 
 const Row = (props: FlexProps) => (
 	<Flex direction={FlexDirection.Row} {...props} />

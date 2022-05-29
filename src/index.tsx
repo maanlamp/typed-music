@@ -1,405 +1,269 @@
-import Column from "components/column";
-import "components/layout.css";
-import { type Track } from "components/track";
-import Tracks from "components/tracks";
+import { ReactComponent as ArrowFromRightIcon } from "assets/icons/arrow-from-right.svg";
+import { ReactComponent as ArrowToRightIcon } from "assets/icons/arrow-to-right.svg";
+import { ReactComponent as MetronomeIcon } from "assets/icons/metronome.svg";
+import { ReactComponent as MusicIcon } from "assets/icons/music.svg";
+import { ReactComponent as PauseIcon } from "assets/icons/pause.svg";
+import { ReactComponent as PlayIcon } from "assets/icons/play.svg";
+import { ReactComponent as AddIcon } from "assets/icons/plus.svg";
+import { ReactComponent as RepeatIcon } from "assets/icons/repeat.svg";
+import { ReactComponent as RewindIcon } from "assets/icons/rewind.svg";
+import { ReactComponent as ShareIcon } from "assets/icons/share.svg";
+import Button from "components/interface/button";
+import Icon from "components/interface/icon";
+import IconButton from "components/interface/icon-button";
+import Text from "components/interface/text";
+import Textfield from "components/interface/textfield";
+import Column from "components/layout/column";
+import {
+	CrossAxisAlignment,
+	MainAxisAlignment,
+	Overflow
+} from "components/layout/flex";
+import Grid from "components/layout/grid";
+import {
+	Gap,
+	Padding
+} from "components/layout/layout";
+import "components/layout/layout.css";
+import Row from "components/layout/row";
+import TimelineRail from "components/timeline/timeline-rail";
+import TrackDrawer from "components/track/track-drawer";
+import TrackRail from "components/track/track-rail";
 import "index.css";
-import useAudio, { Synthesiser } from "lib/audio";
-import useMidi, {
-	MidiNoteWithDuration
-} from "lib/midi";
-import { set } from "lib/state";
-import { repeat } from "lib/utils";
-import React, {
-	createContext,
-	useContext,
-	useState
-} from "react";
+import {
+	AppContext,
+	initialState,
+	reducer
+} from "lib/state";
+import React, { useReducer } from "react";
 import ReactDOM from "react-dom";
 
-// TODO: Visualise current input with https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
-
-type AppState = Readonly<{
-	instruments: readonly Synthesiser[];
-	tracks: Record<Track["id"], Track>;
-	bpm: number;
-	volume: number;
-	signature: readonly [number, number];
-	playing: boolean;
-	recording: boolean;
-	time: number;
-	units: {
-		pixelsPerBeat: number;
-		beatsPerBar: number;
-		wholeNotesPerBeat: number;
-		beatsPerSecond: number;
-		beatsPerMillisecond: number;
-		pixelsPerBar: number;
-		pixelsPerSecond: number;
-		pixelsPerMillisecond: number;
-		millisecondsPerBeat: number;
-		millisecondsPerBar: number;
-	};
-}>;
-
-const defaultAppState: AppState = {
-	instruments: [],
-	tracks: {},
-	bpm: 0,
-	volume: 0,
-	signature: [0, 0],
-	playing: false,
-	recording: false,
-	time: 0,
-	units: {
-		pixelsPerBeat: 0,
-		beatsPerBar: 0,
-		wholeNotesPerBeat: 0,
-		beatsPerSecond: 0,
-		beatsPerMillisecond: 0,
-		pixelsPerBar: 0,
-		pixelsPerSecond: 0,
-		pixelsPerMillisecond: 0,
-		millisecondsPerBeat: 0,
-		millisecondsPerBar: 0
-	}
-};
-
-const app = createContext<
-	| readonly [
-			AppState,
-			<V>(
-				chain: string,
-				value: V | ((old: V) => V)
-			) => void
-	  ]
->([defaultAppState, () => {}]);
-
-enum Interval {
-	Cent = 1,
-	Semitone = 100,
-	Tone = 200,
-	Octave = 1200
-}
-
-const organ: Synthesiser = {
-	id: 0,
-	nodes: [
-		{
-			type: "sine",
-			detune: Interval.Octave * -1,
-			gain: 1
-		},
-		{
-			type: "sine",
-			gain: 1
-		},
-		{
-			type: "sine",
-			detune: Interval.Octave,
-			gain: 0.5
-		},
-		{
-			type: "sine",
-			detune: Interval.Octave * 2,
-			gain: 0.25
-		},
-		{
-			type: "sine",
-			detune: Interval.Octave * 3,
-			gain: 0.125
-		}
-	]
-};
-
-const useAppState = () => useContext(app);
-
-export default useAppState;
+// TODO: Visualise each track's gain with https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
 
 const App = () => {
-	const [signature, setSignature] = useState<
-		readonly [number, number]
-	>([4, 4]);
-	const [bpm, setBpm] = useState(100);
-	const [volume, setVolume] = useState(0.05);
-	const audio = useAudio({ volume });
-	useMidi({
-		play: note =>
-			audio.play({ note, instrument: organ }),
-		stop: note => audio.stop({ note, synth: organ })
-	});
-	const beatsPerSecond = bpm / 60;
-	const beatsPerBar = signature[0];
-	const pixelsPerBeat = 32 * (100 / bpm);
-	const beatsPerMillisecond = beatsPerSecond / 1000;
-	const millisecondsPerBeat = 1000 / beatsPerSecond;
-	const units = {
-		pixelsPerBeat,
-		beatsPerBar,
-		wholeNotesPerBeat: signature[1],
-		beatsPerSecond,
-		beatsPerMillisecond,
-		pixelsPerBar: pixelsPerBeat * beatsPerBar,
-		pixelsPerSecond: pixelsPerBeat * beatsPerSecond,
-		pixelsPerMillisecond:
-			pixelsPerBeat * beatsPerMillisecond,
-		millisecondsPerBeat,
-		millisecondsPerBar:
-			millisecondsPerBeat * beatsPerBar
-	};
+	const [state, dispatch] = useReducer(
+		reducer,
+		initialState
+	);
 
-	const [state, setState] = useState<AppState>({
-		units,
-		time: 0,
-		signature: [4, 4],
-		bpm: 100,
-		volume: 0.05,
-		instruments: [organ],
-		playing: false,
-		recording: false,
-		tracks: {
-			"0": {
-				id: "0",
-				isRecording: false,
-				mono: false,
-				pan: 0.5,
-				muted: false,
-				locked: true,
-				volume: [1, 1],
-				solo: false,
-				recordings: [
-					{
-						start: 0,
-						end: units.millisecondsPerBar * 2,
-						bpm: 100,
-						notes: (
-							[
-								[81, 2],
-								[76, 1],
-								[74, 1],
-								[73, 2],
-								[null, 1],
-								[73, 1],
-								[73, 1],
-								[74, 1],
-								[76, 1],
-								[78, 1],
-								[74, 2],
-								[null, 2],
-								[78, 1],
-								[76, 1],
-								[74, 1],
-								[73, 1],
-								[71, 1],
-								[73, 1],
-								[74, 1],
-								[78, 1],
-								[76, 1],
-								[74, 1],
-								[73, 1],
-								[71, 1],
-								[69, 2]
-							] as [null | number, number][]
-						)
-							.map(
-								([note, duration], i, all) =>
-									note && {
-										note,
-										velocity: 127,
-										time:
-											all
-												.slice(0, i)
-												.map(([, d]) => d)
-												.reduce((x, d) => x + d, 0) *
-											(units.millisecondsPerBeat / 4),
-										duration:
-											(units.millisecondsPerBeat / 4) *
-											duration
-									}
-							)
-							.filter(
-								Boolean
-							) as MidiNoteWithDuration[]
-					},
-					{
-						start: units.millisecondsPerBar * 2,
-						end: units.millisecondsPerBar * 4,
-						bpm: 100,
-						notes: (
-							[
-								[73, 1],
-								[71, 1],
-								[73, 2],
-								[73, 2],
-								[71, 1],
-								[73, 1],
-								[74, 2],
-								[73, 1],
-								[71, 1],
-								[73, 2],
-								[69, 2],
-								[69, 1],
-								[71, 1],
-								[73, 1],
-								[74, 1],
-								[73, 1],
-								[71, 1],
-								[69, 1],
-								[76, 1],
-								[73, 2]
-							] as [number | null, number][]
-						)
-							.map(
-								([note, duration], i, all) =>
-									note && {
-										note,
-										velocity: 127,
-										time:
-											all
-												.slice(0, i)
-												.map(([, d]) => d)
-												.reduce((x, d) => x + d, 0) *
-											(units.millisecondsPerBeat / 4),
-										duration:
-											(units.millisecondsPerBeat / 4) *
-											duration
-									}
-							)
-							.filter(
-								Boolean
-							) as MidiNoteWithDuration[]
-					},
-					{
-						start: units.millisecondsPerBar * 4,
-						end: units.millisecondsPerBar * 6,
-						bpm: 100,
-						notes: (
-							[
-								[73, 1],
-								[71, 1],
-								[73, 2],
-								[73, 2],
-								[71, 1],
-								[73, 1],
-								[74, 2],
-								[73, 1],
-								[71, 1],
-								[73, 2],
-								[69, 2],
-								[69, 1],
-								[71, 1],
-								[73, 1],
-								[74, 1],
-								[73, 1],
-								[71, 1],
-								[69, 1],
-								[76, 1],
-								[73, 2]
-							] as [number | null, number][]
-						)
-							.map(
-								([note, duration], i, all) =>
-									note && {
-										note,
-										velocity: 127,
-										time:
-											all
-												.slice(0, i)
-												.map(([, d]) => d)
-												.reduce((x, d) => x + d, 0) *
-											(units.millisecondsPerBeat / 4),
-										duration:
-											(units.millisecondsPerBeat / 4) *
-											duration
-									}
-							)
-							.filter(
-								Boolean
-							) as MidiNoteWithDuration[]
-					}
-				]
-			},
-			"1": {
-				id: "1",
-				isRecording: false,
-				mono: false,
-				pan: 0.5,
-				muted: false,
-				locked: true,
-				volume: [1, 1],
-				solo: false,
-				recordings: [
-					{
-						start: units.millisecondsPerBar * 2,
-						end: units.millisecondsPerBar * 6,
-						bpm: 100,
-						notes: (
-							repeat(2)([
-								[45, 3],
-								[null, 1],
-								[40, 3],
-								[null, 1],
-								[45, 3],
-								[null, 1],
-								[40, 3],
-								[null, 1],
-								[45, 3],
-								[null, 1],
-								[40, 3],
-								[null, 1],
-								[45, 3],
-								[null, 1],
-								[40, 3],
-								[null, 1]
-							]) as [number | null, number][]
-						)
-							.map(
-								([note, duration], i, all) =>
-									note && {
-										note,
-										velocity: 127,
-										time:
-											all
-												.slice(0, i)
-												.map(([, d]) => d)
-												.reduce((x, d) => x + d, 0) *
-											(units.millisecondsPerBeat / 4),
-										duration:
-											(units.millisecondsPerBeat / 4) *
-											duration
-									}
-							)
-							.filter(
-								Boolean
-							) as MidiNoteWithDuration[]
-					}
-				]
-			}
-		}
-	});
-
-	const update = (...args: Parameters<typeof set>) => {
-		if (
-			["signature", "bpm", "volume"].includes(args[0])
-		) {
-			((
-				{
-					signature: setSignature,
-					bpm: setBpm,
-					volume: setVolume
-				}[args[0]] as Function
-			)(args[1]));
-		}
-		setState(set(...args));
-	};
-
-	if (!state) return <div>Loading...</div>;
+	const tracks = Object.values(state.tracks);
+	const trackCount = tracks.length;
 
 	return (
-		<app.Provider value={[state, update]}>
+		<AppContext.Provider value={[state, dispatch]}>
 			<Column as="main" grow>
-				<Tracks audio={audio} />
+				<Row
+					padding={Padding.Medium}
+					mainAxisAlignment={
+						MainAxisAlignment.SpaceBetween
+					}
+					crossAxisAlignment={
+						CrossAxisAlignment.Center
+					}
+					gap={Gap.Huge}>
+					<Row
+						crossAxisAlignment={
+							CrossAxisAlignment.Center
+						}
+						gap={Gap.Small}>
+						<Icon svg={MusicIcon} />
+						<Text weight={600}>Web Band</Text>
+					</Row>
+					<Row
+						crossAxisAlignment={
+							CrossAxisAlignment.Center
+						}
+						gap={Gap.Large}>
+						<Row
+							gap={Gap.Small}
+							crossAxisAlignment={
+								CrossAxisAlignment.Baseline
+							}>
+							<Textfield
+								type="number"
+								value={state.signature[0]}
+								onChange={value =>
+									dispatch({
+										type: "setSignature",
+										signature: signature => [
+											parseInt(value),
+											signature[1]
+										]
+									})
+								}
+							/>
+							<span>/</span>
+							<Textfield
+								type="number"
+								value={state.signature[1]}
+								onChange={value =>
+									dispatch({
+										type: "setSignature",
+										signature: signature => [
+											signature[0],
+											parseInt(value)
+										]
+									})
+								}
+							/>
+						</Row>
+						<Row>
+							<IconButton
+								icon={RewindIcon}
+								onClick={() =>
+									dispatch({
+										type: "setTime",
+										time: 0
+									})
+								}
+							/>
+							<IconButton
+								icon={
+									state.playing ? PauseIcon : PlayIcon
+								}
+								onClick={() =>
+									dispatch({
+										type: "setPlaying",
+										playing: !state.playing
+									})
+								}
+							/>
+							<IconButton
+								icon={RepeatIcon}
+								onClick={() => {
+									throw new Error(
+										"TODO: Repeat playback to selected range/entire timeline"
+									);
+								}}
+							/>
+						</Row>
+						<Row
+							crossAxisAlignment={
+								CrossAxisAlignment.Center
+							}
+							gap={Gap.Small}>
+							<IconButton
+								icon={MetronomeIcon}
+								onClick={() => {
+									throw new Error(
+										"TODO: Toggle metronome"
+									);
+								}}
+							/>
+							<Row
+								as="label"
+								crossAxisAlignment={
+									CrossAxisAlignment.Baseline
+								}
+								gap={Gap.Small}>
+								<Textfield
+									type="number"
+									value={state.bpm}
+									onChange={value =>
+										dispatch({
+											type: "setBpm",
+											bpm: parseInt(value)
+										})
+									}
+								/>
+								<Text weight={600}>BPM</Text>
+							</Row>
+						</Row>
+					</Row>
+					<IconButton
+						icon={ShareIcon}
+						onClick={() => {
+							throw new Error(
+								"TODO: Implement sharing by hashing all tracks and instruments?"
+							);
+						}}
+					/>
+				</Row>
+				<Grid
+					rows={["min-content", "min-content"]}
+					overflow={{
+						x: Overflow.Hidden,
+						y: Overflow.Auto
+					}}>
+					<Row
+						style={{
+							position: "sticky",
+							top: "0",
+							zIndex: "1",
+							background: "white"
+						}}
+						grid={{
+							columnStart: 0,
+							columnEnd: 1,
+							rowStart: 1
+						}}
+						padding={Padding.Small}
+						mainAxisAlignment={
+							MainAxisAlignment.SpaceBetween
+						}
+						crossAxisAlignment={
+							CrossAxisAlignment.Center
+						}
+						gap={Gap.Medium}>
+						<Button
+							icon={AddIcon}
+							onClick={() =>
+								dispatch({
+									type: "addTrack",
+									name: "New track"
+								})
+							}>
+							<Text weight={600}>Add track</Text>
+						</Button>
+						<IconButton
+							icon={
+								state.drawersOpen
+									? ArrowFromRightIcon
+									: ArrowToRightIcon
+							}
+							onClick={() =>
+								dispatch({ type: "toggleDrawers" })
+							}
+						/>
+					</Row>
+					{tracks.map((track, i) => (
+						<TrackDrawer
+							grid={{
+								columnStart: 0,
+								columnEnd: 1,
+								rowStart: i + 2
+							}}
+							key={track.id}
+							track={track}
+						/>
+					))}
+					<TimelineRail
+						style={{
+							position: "sticky",
+							top: "0",
+							zIndex: "1"
+						}}
+						grid={{
+							columnStart: 1,
+							columnEnd: 2,
+							rowStart: 1,
+							rowEnd: 2
+						}}
+						tracks={trackCount + 2}
+					/>
+					{tracks.map((track, i) => (
+						<TrackRail
+							grid={{
+								columnStart: 1,
+								rowStart: i + 2
+							}}
+							key={track.id}
+							track={track}
+						/>
+					))}
+				</Grid>
 			</Column>
-		</app.Provider>
+		</AppContext.Provider>
 	);
 };
 

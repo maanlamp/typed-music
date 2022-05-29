@@ -6,17 +6,21 @@
 	border-radius: 0.1rem;
 	transition: all 0.1s ease;
 	background: var(--button-color);
-	font-weight: 700;
+	font-size: 1rem;
+	white-space: nowrap;
 }
 
 .button:hover,
 .button:focus {
 	outline: none;
-	box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3);
+	box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
 }
 
 .button:active {
-	transform: scale(0.9);
+	transform: scale(0.95);
+}
+.icon-button:active {
+	transform: scale(0.85);
 }
 
 .button.round {

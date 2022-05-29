@@ -1,0 +1,48 @@
+.timeline-rail {
+	height: 53px;
+	user-select: none;
+	background: repeating-linear-gradient(
+			90deg,
+			rgba(0, 0, 0, 0.2) 0,
+			transparent 1px
+				calc(var(--px-per-ms) * 250 - 1px),
+			rgba(0, 0, 0, 0.2) calc(var(--px-per-ms) * 250)
+		),
+		#f9f9f9d2;
+	backdrop-filter: blur(4px);
+	border-bottom: 2px solid #f4f4f4;
+}
+
+.timeline-thumb {
+	position: absolute;
+	height: 1.5rem;
+	aspect-ratio: 1 / 1;
+	border-radius: 50%;
+	background: #bababa;
+	transform: translateX(-43%) scale(0.75);
+	cursor: grab;
+	bottom: 0;
+	transform-origin: center center;
+}
+.timeline-thumb:not(.dragging, .playing) {
+	transition: all 0.1s ease;
+}
+
+.timeline-thumb:hover {
+	transform: translateX(-43%) scale(1);
+}
+
+.timeline-thumb:active {
+	cursor: grabbing;
+}
+
+.timeline-cursor {
+	width: 2px;
+	background: #bababa;
+	pointer-events: none;
+	grid-column-start: 1;
+	z-index: 2;
+}
+.timeline-cursor:not(.dragging, .playing) {
+	transition: all 0.1s ease;
+}

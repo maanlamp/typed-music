@@ -3,7 +3,7 @@ import {
 	classes as makeClasses,
 	Gap,
 	Padding
-} from "components/layout";
+} from "components/layout/layout";
 import React, { ReactNode } from "react";
 
 export enum FlexDirection {
@@ -33,6 +33,29 @@ export enum WrapAlignment {
 	Stretch = "wrap-stretch",
 	Baseline = "wrap-baseline",
 	SpaceBetween = "wrap-space-between"
+}
+
+export enum Positioning {
+	Static = "position-static",
+	Relative = "position-relative",
+	Absolute = "position-absolute",
+	Fixed = "position-fixed",
+	Sticky = "position-sticky"
+}
+
+type Rect<T> = Readonly<{
+	top: T;
+	right: T;
+	bottom: T;
+	left: T;
+}>;
+
+export enum Overflow {
+	Visible = "overflow-visible",
+	Hidden = "overflow-hidden",
+	Clip = "overflow-clip",
+	Scroll = "overflow-scroll",
+	Auto = "overflow-auto"
 }
 
 export type FlexProps = Readonly<{
@@ -66,17 +89,34 @@ export type FlexProps = Readonly<{
 	padding?: Padding;
 
 	/** TODO: Documentation */
-	as?: keyof HTMLElementTagNameMap;
+	as?: keyof JSX.IntrinsicElements;
 
 	/** TODO: Documentation */
 	classes?: Classes;
 
 	/** TODO: Documentation */
-	style?: CSSStyleDeclaration;
+	style?: Partial<CSSStyleDeclaration>;
 
 	/** TODO: Documentation */
-	[key: string]: any;
-}>;
+	positioning?: Positioning;
+
+	/** TODO: Documentation */
+	offset?: Partial<Rect<number>>;
+
+	/** TODO: Documentation */
+	overflow?:
+		| Overflow
+		| Partial<Readonly<{ x: Overflow; y: Overflow }>>;
+
+	/** TODO: Documentation */
+	grid?: Readonly<{
+		columnStart?: string | number;
+		columnEnd?: string | number;
+		rowStart?: string | number;
+		rowEnd?: string | number;
+	}>;
+}> &
+	JSX.IntrinsicElements["div"];
 
 const Flex = ({
 	children,
@@ -92,24 +132,31 @@ const Flex = ({
 	as,
 	classes,
 	style,
+	positioning,
+	offset,
+	overflow,
+	grid,
 	...props
 }: FlexProps) =>
 	React.createElement(as ?? "div", {
 		...props,
-		style:
-			grow || shrink
-				? {
-						flexGrow:
-							grow !== undefined
-								? Number(grow)
-								: undefined,
-						flexShrink:
-							shrink !== undefined
-								? Number(shrink)
-								: undefined,
-						...style
-				  }
-				: style,
+		style: {
+			flexGrow:
+				grow !== undefined ? Number(grow) : undefined,
+			flexShrink:
+				shrink !== undefined
+					? Number(shrink)
+					: undefined,
+			top: offset?.top && `${offset.top}px`,
+			right: offset?.right && `${offset.right}px`,
+			bottom: offset?.bottom && `${offset.bottom}px`,
+			left: offset?.left && `${offset.left}px`,
+			gridColumnStart: grid?.columnStart,
+			gridColumnEnd: grid?.columnEnd,
+			gridRowStart: grid?.rowStart,
+			gridRowEnd: grid?.rowEnd,
+			...style
+		},
 		className: makeClasses([
 			"flex",
 			direction,
@@ -119,6 +166,14 @@ const Flex = ({
 			crossAxisAlignment,
 			wrapAlignment,
 			padding,
+			positioning,
+			overflow &&
+				(typeof overflow === "string"
+					? overflow
+					: Object.entries(overflow).map(
+							([axis, overflow]) =>
+								overflow.split("-").join(`-${axis}-`)
+					  )),
 			classes
 		]),
 		children

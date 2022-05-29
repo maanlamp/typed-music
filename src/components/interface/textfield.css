@@ -1,0 +1,14 @@
+.textfield {
+	border: 2px solid rgba(0, 0, 0, 0.2);
+	box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.1);
+	border-radius: 4px;
+	padding: 0.25em 0.5em;
+	font-weight: 600;
+	transition: all 0.1s ease;
+}
+
+.textfield:hover,
+.textfield:focus {
+	outline: none;
+	box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+}

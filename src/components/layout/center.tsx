@@ -2,7 +2,7 @@ import Flex, {
 	CrossAxisAlignment,
 	FlexProps,
 	MainAxisAlignment
-} from "components/flex";
+} from "components/layout/flex";
 
 const Center = (props: FlexProps) => (
 	<Flex

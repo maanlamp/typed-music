@@ -1,15 +1,25 @@
 .flex {
 	display: flex;
 }
-
 .flex-inline {
 	display: inline-flex;
+}
+
+.grid {
+	display: grid;
+}
+.grid-inline {
+	display: inline-grid;
+}
+.grid.subgrid {
+	display: grid;
+	grid-template-columns: subgrid;
+	grid-template-rows: subgrid;
 }
 
 .column {
 	flex-direction: column;
 }
-
 .column-reverse {
 	flex-direction: column-reverse;
 }
@@ -17,7 +27,6 @@
 .row {
 	flex-direction: row;
 }
-
 .row-reverse {
 	flex-direction: row-reverse;
 }
@@ -76,23 +85,18 @@
 .gap-tiny {
 	gap: 0.1rem;
 }
-
 .gap-small {
 	gap: 0.5rem;
 }
-
 .gap-medium {
 	gap: 1rem;
 }
-
 .gap-large {
 	gap: 2rem;
 }
-
 .gap-huge {
 	gap: 4rem;
 }
-
 .gap-inherit {
 	gap: inherit;
 }
@@ -100,23 +104,82 @@
 .padding-tiny {
 	padding: 0.1rem;
 }
-
 .padding-small {
 	padding: 0.5rem;
 }
-
 .padding-medium {
 	padding: 1rem;
 }
-
 .padding-large {
 	padding: 2rem;
 }
-
 .padding-huge {
 	padding: 4rem;
 }
-
 .padding-inherit {
 	padding: inherit;
+}
+
+.position-static {
+	position: static;
+}
+.position-relative {
+	position: relative;
+}
+.position-absolute {
+	position: absolute;
+}
+.position-fixed {
+	position: fixed;
+}
+.position-sticky {
+	position: sticky;
+}
+
+.overflow-visible {
+	overflow: visible;
+}
+.overflow-hidden {
+	overflow: hidden;
+}
+.overflow-clip {
+	overflow: clip;
+}
+.overflow-scroll {
+	overflow: scroll;
+}
+.overflow-auto {
+	overflow: auto;
+}
+
+.overflow-x-visible {
+	overflow-x: visible;
+}
+.overflow-x-hidden {
+	overflow-x: hidden;
+}
+.overflow-x-clip {
+	overflow-x: clip;
+}
+.overflow-x-scroll {
+	overflow-x: scroll;
+}
+.overflow-x-auto {
+	overflow-x: auto;
+}
+
+.overflow-y-visible {
+	overflow-y: visible;
+}
+.overflow-y-hidden {
+	overflow-y: hidden;
+}
+.overflow-y-clip {
+	overflow-y: clip;
+}
+.overflow-y-scroll {
+	overflow-y: scroll;
+}
+.overflow-y-auto {
+	overflow-y: auto;
 }

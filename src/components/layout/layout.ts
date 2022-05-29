@@ -1,4 +1,11 @@
-import { Falsy } from "lib/utils";
+export type Falsy<T> =
+	| T
+	| 0
+	| ""
+	| null
+	| undefined
+	| false
+	| 0n;
 
 export enum Size {
 	Tiny = ".1rem",
