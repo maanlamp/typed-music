@@ -15,12 +15,16 @@ type RecordingProps = Readonly<{
 const Recording = ({ recording }: RecordingProps) => {
 	const [state] = useApp();
 	const duration =
-		(recording.end ?? 0 - recording.start) *
+		((recording.end ?? 0) - recording.start) *
 		state.pxPerMs;
 	return (
 		<Stack
+			positioning={Positioning.Absolute}
 			classes="recording"
-			style={{ width: `${duration}px` }}>
+			style={{
+				width: `${duration}px`,
+				left: `${recording.start * state.pxPerMs}px`
+			}}>
 			<Flex
 				positioning={Positioning.Absolute}
 				offset={{ left: 8, top: 4 }}>

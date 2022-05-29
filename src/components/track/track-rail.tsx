@@ -20,10 +20,10 @@ const TrackRail = ({
 			{
 				"--track-color": stringify(track.color),
 				"--track-color-light": stringify(
-					lighten(track.color, 0.2)
+					lighten(track.color, 0.6)
 				),
 				"--track-color-dark": stringify(
-					darken(track.color, 0.2)
+					darken(track.color, 0.33)
 				)
 			} as Partial<CSSStyleDeclaration> &
 				React.CSSProperties

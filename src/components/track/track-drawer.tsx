@@ -39,7 +39,7 @@ const TrackDrawer = ({
 	const [state, dispatch] = useApp();
 
 	const darkenedTrackColor = stringify(
-		darken(track.color, 0.4)
+		darken(track.color, 0.6)
 	);
 
 	return (

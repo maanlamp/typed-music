@@ -109,11 +109,11 @@ export type FlexProps = Readonly<{
 		| Partial<Readonly<{ x: Overflow; y: Overflow }>>;
 
 	/** TODO: Documentation */
-	grid?: Readonly<{
-		columnStart?: string | number;
-		columnEnd?: string | number;
-		rowStart?: string | number;
-		rowEnd?: string | number;
+	gridArea?: Partial<{
+		rowStart: number;
+		columnStart: number;
+		rowEnd: number;
+		columnEnd: number;
 	}>;
 }> &
 	JSX.IntrinsicElements["div"];
@@ -135,7 +135,7 @@ const Flex = ({
 	positioning,
 	offset,
 	overflow,
-	grid,
+	gridArea,
 	...props
 }: FlexProps) =>
 	React.createElement(as ?? "div", {
@@ -151,10 +151,10 @@ const Flex = ({
 			right: offset?.right && `${offset.right}px`,
 			bottom: offset?.bottom && `${offset.bottom}px`,
 			left: offset?.left && `${offset.left}px`,
-			gridColumnStart: grid?.columnStart,
-			gridColumnEnd: grid?.columnEnd,
-			gridRowStart: grid?.rowStart,
-			gridRowEnd: grid?.rowEnd,
+			gridRowStart: gridArea?.rowStart,
+			gridColumnStart: gridArea?.columnStart,
+			gridRowEnd: gridArea?.rowEnd,
+			gridColumnEnd: gridArea?.columnEnd,
 			...style
 		},
 		className: makeClasses([

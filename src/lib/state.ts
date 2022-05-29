@@ -218,6 +218,14 @@ export const reducer: Reducer<
 	}
 };
 
+const midiNoteToFrequency = ({ note }: Note) =>
+	2 ** ((note - 69) / 12) * 440;
+
+const repeat =
+	(n: number) =>
+	<T>(f: (i: number) => T): T[] =>
+		[...Array(n).keys()].map(f);
+
 export const initialState: AppState = {
 	audio: new AudioContext(),
 	playing: false,
@@ -255,32 +263,37 @@ export const initialState: AppState = {
 						}
 					]
 				},
-				{
-					color: colors["titanium-yellow"]["500"],
-					name: "Synth (Bass)",
-					locked: true,
-					volume: [1, 1],
-					pan: 0,
-					muted: false,
-					isRecording: false,
-					recordings: [
-						{
-							id: uuid(),
-							name: "bass.midi",
-							start: 0,
-							end: 3000,
-							notes: [
-								{
-									id: uuid(),
-									note: 69 - 12 - 12,
-									velocity: 127,
-									time: 0,
-									duration: 3000
-								}
-							]
-						}
-					]
-				}
+				...repeat(12)(
+					i =>
+						({
+							color: Object.values(colors).map(
+								col => col["500"]
+							)[
+								(i + 1) % Object.values(colors).length
+							],
+							name: "Synth (Bass)",
+							locked: true,
+							volume: [1, 1],
+							pan: 0,
+							muted: false,
+							isRecording: false,
+							recordings: repeat(2)(i => ({
+								id: uuid(),
+								name: "bass.midi",
+								start: i * 3000,
+								end: (i + 1) * 3000,
+								notes: [
+									{
+										id: uuid(),
+										note: 69 - 12 - 12,
+										velocity: 127,
+										time: 0,
+										duration: 3000
+									}
+								]
+							}))
+						} as Omit<Track, "id">)
+				)
 			] as Omit<Track, "id">[]
 		).map(track => {
 			const id = uuid();
@@ -332,7 +345,7 @@ export const useApp = () => {
 					)
 			);
 			gain = new GainNode(state.audio, {
-				gain: 0.05
+				gain: 0.01
 			});
 			gain.connect(state.audio.destination);
 			Object.values(state.tracks)
@@ -351,24 +364,28 @@ export const useApp = () => {
 				.flatMap(track =>
 					Object.values(track.recordings)
 				)
-				.flatMap(recording => recording.notes)
-				.forEach(note => {
-					const whenStart = note.time - state.time;
-					const whenStop =
-						whenStart + (note.duration ?? 0);
-					if (whenStart >= 0 && whenStop > 0) {
-						timeouts.push(
-							setTimeout(() => {
-								oscillators[note.id].connect(gain);
-							}, whenStart)
-						);
-						timeouts.push(
-							setTimeout(() => {
-								oscillators[note.id].disconnect(gain);
-							}, whenStop)
-						);
-					}
-				});
+				.forEach(recording =>
+					recording.notes.forEach(note => {
+						const whenStart =
+							recording.start + note.time - state.time;
+						const whenStop =
+							whenStart + (note.duration ?? 0);
+						if (whenStart >= 0 && whenStop > 0) {
+							timeouts.push(
+								setTimeout(() => {
+									oscillators[note.id].connect(gain);
+								}, whenStart)
+							);
+							timeouts.push(
+								setTimeout(() => {
+									oscillators[note.id].disconnect(
+										gain
+									);
+								}, whenStop)
+							);
+						}
+					})
+				);
 		}
 
 		return () => {
@@ -391,6 +408,3 @@ export const useApp = () => {
 
 	return context;
 };
-
-const midiNoteToFrequency = ({ note }: Note) =>
-	2 ** ((note - 69) / 12) * 440;

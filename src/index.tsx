@@ -14,10 +14,10 @@ import IconButton from "components/interface/icon-button";
 import Text from "components/interface/text";
 import Textfield from "components/interface/textfield";
 import Column from "components/layout/column";
+import Container from "components/layout/container";
 import {
 	CrossAxisAlignment,
-	MainAxisAlignment,
-	Overflow
+	MainAxisAlignment
 } from "components/layout/flex";
 import Grid from "components/layout/grid";
 import {
@@ -179,88 +179,63 @@ const App = () => {
 						}}
 					/>
 				</Row>
-				<Grid
-					rows={["min-content", "min-content"]}
-					overflow={{
-						x: Overflow.Hidden,
-						y: Overflow.Auto
-					}}>
-					<Row
-						style={{
-							position: "sticky",
-							top: "0",
-							zIndex: "1",
-							background: "white"
-						}}
-						grid={{
-							columnStart: 0,
-							columnEnd: 1,
-							rowStart: 1
-						}}
-						padding={Padding.Small}
-						mainAxisAlignment={
-							MainAxisAlignment.SpaceBetween
-						}
-						crossAxisAlignment={
-							CrossAxisAlignment.Center
-						}
-						gap={Gap.Medium}>
-						<Button
-							icon={AddIcon}
-							onClick={() =>
-								dispatch({
-									type: "addTrack",
-									name: "New track"
-								})
-							}>
-							<Text weight={600}>Add track</Text>
-						</Button>
-						<IconButton
-							icon={
-								state.drawersOpen
-									? ArrowFromRightIcon
-									: ArrowToRightIcon
-							}
-							onClick={() =>
-								dispatch({ type: "toggleDrawers" })
-							}
-						/>
-					</Row>
-					{tracks.map((track, i) => (
-						<TrackDrawer
-							grid={{
-								columnStart: 0,
-								columnEnd: 1,
-								rowStart: i + 2
-							}}
-							key={track.id}
-							track={track}
-						/>
-					))}
-					<TimelineRail
-						style={{
-							position: "sticky",
-							top: "0",
-							zIndex: "1"
-						}}
-						grid={{
+				<Grid columns={["max-content", "max-content"]}>
+					<Container
+						gridArea={{
 							columnStart: 1,
-							columnEnd: 2,
-							rowStart: 1,
-							rowEnd: 2
-						}}
-						tracks={trackCount + 2}
-					/>
-					{tracks.map((track, i) => (
-						<TrackRail
-							grid={{
-								columnStart: 1,
-								rowStart: i + 2
-							}}
-							key={track.id}
-							track={track}
-						/>
-					))}
+							columnEnd: 2
+						}}>
+						<Row
+							padding={Padding.Small}
+							mainAxisAlignment={
+								MainAxisAlignment.SpaceBetween
+							}
+							crossAxisAlignment={
+								CrossAxisAlignment.Center
+							}
+							gap={Gap.Medium}>
+							<Button
+								icon={AddIcon}
+								onClick={() =>
+									dispatch({
+										type: "addTrack",
+										name: "New track"
+									})
+								}>
+								<Text weight={600}>Add track</Text>
+							</Button>
+							<IconButton
+								icon={
+									state.drawersOpen
+										? ArrowFromRightIcon
+										: ArrowToRightIcon
+								}
+								onClick={() =>
+									dispatch({ type: "toggleDrawers" })
+								}
+							/>
+						</Row>
+						{tracks.map((track, i) => (
+							<TrackDrawer
+								key={track.id}
+								track={track}
+							/>
+						))}
+					</Container>
+					{/* TODO: This doesn't work. Just do a figma sketch my guy. */}
+					<Container
+						gridArea={{
+							columnStart: 2,
+							columnEnd: 3
+						}}>
+						<TimelineRail />
+						{tracks.map((track, i) => (
+							<TrackRail
+								key={track.id}
+								track={track}
+							/>
+						))}
+					</Container>
 				</Grid>
 			</Column>
 		</AppContext.Provider>

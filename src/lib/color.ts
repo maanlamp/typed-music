@@ -189,7 +189,7 @@ export const lighten = (
 	amount: number
 ) => {
 	const hsl = parse(color);
-	return { ...hsl, l: hsl.l + amount * 100 };
+	return { ...hsl, l: hsl.l + (100 - hsl.l) * amount };
 };
 
 export const darken = (
@@ -197,7 +197,7 @@ export const darken = (
 	amount: number
 ) => {
 	const hsl = parse(color);
-	return { ...hsl, l: hsl.l - amount * 100 };
+	return { ...hsl, l: hsl.l * (1 - amount) };
 };
 
 type ColorName =

@@ -3,8 +3,9 @@ import Flex, {
 	Positioning
 } from "components/layout/flex";
 
-const Stack = (props: FlexProps) => (
+const Stack = ({ classes, ...props }: FlexProps) => (
 	<Flex
+		classes={["stack", classes]}
 		positioning={Positioning.Relative}
 		{...props}
 	/>

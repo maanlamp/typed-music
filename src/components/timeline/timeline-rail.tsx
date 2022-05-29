@@ -5,15 +5,7 @@ import { useApp } from "lib/state";
 import React, { useEffect, useState } from "react";
 import "./timeline-rail.css";
 
-type TimelineRailProps = FlexProps &
-	Readonly<{
-		tracks: number;
-	}>;
-
-const TimelineRail = ({
-	tracks,
-	...props
-}: TimelineRailProps) => {
+const TimelineRail = (props: FlexProps) => {
 	const [state, dispatch] = useApp();
 	const [dragging, setDragging] = useState(false);
 	const [x, setX] = useState<number>();
@@ -117,8 +109,7 @@ const TimelineRail = ({
 					transform: `translateX(${
 						(x ?? state.time * state.pxPerMs) +
 						(Math.round(x ?? state.time) === 0 ? 0 : 1)
-					}px)`,
-					gridRow: `1 / ${tracks}`
+					}px)`
 				}}
 			/>
 		</>
